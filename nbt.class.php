@@ -39,6 +39,16 @@ class NBT {
 	const TAG_COMPOUND = 10;
 	const TAG_INT_ARRAY = 11;
 	
+	public function __construct($filename, $wrapper = "compress.zlib://") {
+		// PHP 5 constructor (just in case PHP 4-style constructors are ever deprecated)
+		$this->loadFile($filename, $wrapper);
+	}
+	
+	public function NBT($filename, $wrapper = "compress.zlib://") {
+		// PHP 4 constructor
+		$this->loadFile($filename, $wrapper);
+	}
+	
 	public function loadFile($filename, $wrapper = "compress.zlib://") {
 		if(is_string($wrapper) && is_file($filename)) {
 			if($this->verbose) trigger_error("Loading file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
