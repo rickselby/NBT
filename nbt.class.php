@@ -39,14 +39,14 @@ class NBT {
 	const TAG_COMPOUND = 10;
 	const TAG_INT_ARRAY = 11;
 	
-	public function __construct($filename, $wrapper = "compress.zlib://") {
+	public function __construct($filename = null, $wrapper = "compress.zlib://") {
 		// PHP 5 constructor (just in case PHP 4-style constructors are ever deprecated)
-		$this->loadFile($filename, $wrapper);
+		if(!is_null($filename)) $this->loadFile($filename, $wrapper);
 	}
 	
-	public function NBT($filename, $wrapper = "compress.zlib://") {
+	public function NBT($filename = null, $wrapper = "compress.zlib://") {
 		// PHP 4 constructor
-		$this->loadFile($filename, $wrapper);
+		if(!is_null($filename)) $this->loadFile($filename, $wrapper);
 	}
 	
 	public function loadFile($filename, $wrapper = "compress.zlib://") {
