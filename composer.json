@@ -1,5 +1,5 @@
 {
-	"name": "Caffe1neAdd1ct/PHP-NBT-Decoder-Encoder",
+	"name": "caffe1neadd1ct/php-nbt-decoder-encoder",
 	"type": "library",
 	"description": "A PHP-based NBT format decoder and encoder, for the Minecraft NBT format.",
 	"keywords": ["NBT", "decode", "encode", "binary"],
