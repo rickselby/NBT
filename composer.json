@@ -1,5 +1,6 @@
 {
 	"name": "vendor/php-nbt-decoder-encoder",
+	"version": "master",
 	"description": "A PHP-based NBT format decoder and encoder, for the Minecraft NBT format.",
 	"authors": [
 		{
