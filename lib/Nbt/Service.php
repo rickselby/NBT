@@ -26,7 +26,6 @@ if ( PHP_INT_SIZE < 8 ) {
 
 class Service
 {
-
     public $root    = array( );
     public $verbose = false;
 
@@ -50,13 +49,6 @@ class Service
             $this->loadFile( $filename, $wrapper );
     }
 
-    public function NBT( $filename = null, $wrapper = "compress.zlib://" )
-    {
-        // PHP 4 constructor
-        if ( !is_null( $filename ) )
-            $this->loadFile( $filename, $wrapper );
-    }
-
     public function loadFile( $filename, $wrapper = "compress.zlib://" )
     {
         if ( is_string( $wrapper ) && is_file( $filename ) ) {
@@ -71,11 +63,15 @@ class Service
             trigger_error( "First parameter must be a filename or a resource.", E_USER_WARNING );
             return false;
         }
+
         if ( $this->verbose )
             trigger_error( "Traversing first tag in file.", E_USER_NOTICE );
+
         $this->traverseTag( $fp, $this->root );
+
         if ( $this->verbose )
             trigger_error( "Encountered end tag for first tag; finished.", E_USER_NOTICE );
+
         return end( $this->root );
     }
 
@@ -286,5 +282,3 @@ class Service
     }
 
 }
-
-?>
