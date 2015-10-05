@@ -27,3 +27,7 @@ The library can be pulled in using composer; add the following to your composer.
     }
 }
 ```
+
+## Future work
+
+Version 2.0 will work with strings, not files, which will give it more flexibility when being used with region files.
