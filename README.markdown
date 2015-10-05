@@ -9,8 +9,10 @@ right extensions, and that there's nothing funky with your configuration.
 
 **Requires the GMP Extension for PHP on 32-bit builds.**
 
-Can be pulled in using composer, add the following to your composer.json
-========================================================================
+## Installing
+### Composer
+
+The library can be pulled in using composer; add the following to your composer.json:
 
 ```
 {
