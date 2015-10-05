@@ -14,30 +14,22 @@ Can be pulled in using composer, add the following to your composer.json
 
 ```
 {
-    "name": "vendor/your-project",
-    "description": "Description of project",
-    "authors": [
-        {
-            "name": "Your Name",
-            "email": "your@yourdomain.com"
-        }
-    ],
     "repositories": [
         {
             "type": "package",
             "package": {
-                "name": "Caffe1neAdd1ct/PHP-NBT-Decoder-Encoder",
-                "version": "1.0.1",
+                "name": "rickselby/PHP-NBT-Decoder-Encoder",
+                "version": "1.0.3",
                 "source": {
-                    "url": "https://github.com/Caffe1neAdd1ct/PHP-NBT-Decoder-Encoder.git",
+                    "url": "https://github.com/rickselby/PHP-NBT-Decoder-Encoder.git",
                     "type": "git",
-                    "reference": "1.0.1"
+                    "reference": "1.0.3"
                 }
             }
         }
     ],
     "require": {
-        "Caffe1neAdd1ct/PHP-NBT-Decoder-Encoder": "1.0.1"
+        "rickselby/PHP-NBT-Decoder-Encoder": "1.0.3"
     }
 }
 ```
