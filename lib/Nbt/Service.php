@@ -81,7 +81,7 @@ class Service
             if ( $this->verbose )
                 trigger_error( "Writing file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE );
             $fp = fopen( "{$wrapper}{$filename}", "wb" );
-        } elseif ( is_null( $wrapper ) && is_resource( $fp ) ) {
+        } elseif ( is_null( $wrapper ) && is_resource( $filename ) ) {
             if ( $this->verbose )
                 trigger_error( "Writing file to existing resource.", E_USER_NOTICE );
             $fp = $filename;
