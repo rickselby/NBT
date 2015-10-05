@@ -16,20 +16,12 @@ Can be pulled in using composer, add the following to your composer.json
 {
     "repositories": [
         {
-            "type": "package",
-            "package": {
-                "name": "rickselby/PHP-NBT-Decoder-Encoder",
-                "version": "1.0.3",
-                "source": {
-                    "url": "https://github.com/rickselby/PHP-NBT-Decoder-Encoder.git",
-                    "type": "git",
-                    "reference": "1.0.3"
-                }
-            }
+            "type": "git",
+            "url": "https://github.com/rickselby/PHP-NBT-Decoder-Encoder"
         }
     ],
     "require": {
-        "rickselby/PHP-NBT-Decoder-Encoder": "1.0.3"
+        "rickselby/PHP-NBT-Decoder-Encoder": "1.0.*"
     }
 }
 ```
