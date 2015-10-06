@@ -29,7 +29,9 @@ if (PHP_INT_SIZE < 8) {
 
 class Service
 {
+    /** @var array The NBT 'tree' **/
     public $root = array();
+    /** @var bool Enable verbose output or not **/
     public $verbose = false;
 
     const TAG_END = 0;
@@ -45,21 +47,38 @@ class Service
     const TAG_COMPOUND = 10;
     const TAG_INT_ARRAY = 11;
 
+    /**
+     * Load a file and read the NBT data from the file.
+     *
+     * @param string $filename File to open
+     * @param string $wrapper  [optional] Stream wrapper if not zlib
+     *
+     * @return array|false
+     */
     public function loadFile($filename, $wrapper = 'compress.zlib://')
     {
-        if (is_file($filename))
-        {
+        if (is_file($filename)) {
             if ($this->verbose) {
                 trigger_error("Loading file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
             }
             $fPtr = fopen("{$wrapper}{$filename}", 'rb');
+
             return $this->readFilePointer($fPtr);
         } else {
             trigger_error('First parameter must be a filename.', E_USER_WARNING);
+
             return false;
         }
     }
 
+    /**
+     * Write the current NBT root data to a file.
+     *
+     * @param string $filename File to write to
+     * @param string $wrapper  [optional] Stream wrapper if not zlib
+     *
+     * @return true
+     */
     public function writeFile($filename, $wrapper = 'compress.zlib://')
     {
         if ($this->verbose) {
@@ -70,6 +89,13 @@ class Service
         fclose($fPtr);
     }
 
+    /**
+     * Read NBT data from the given file pointer.
+     *
+     * @param resource $fPtr File/Stream pointer
+     *
+     * @return array
+     */
     public function readFilePointer($fPtr)
     {
         if ($this->verbose) {
@@ -85,6 +111,11 @@ class Service
         return end($this->root);
     }
 
+    /**
+     * Write the current NBT root data to the given file pointer.
+     *
+     * @param resource $fPtr File/Stream pointer
+     */
     public function writeFilePointer($fPtr)
     {
         if ($this->verbose) {
@@ -95,25 +126,41 @@ class Service
                 trigger_error("Failed to write root tag #{$rootNum} to file/resource.", E_USER_WARNING);
             }
         }
-        return true;
     }
 
+    /**
+     * Read NBT data from a string.
+     *
+     * @param string $string String containing NBT data
+     *
+     * @return array
+     */
     public function readString($string)
     {
         $stream = fopen('php://memory', 'r+b');
         fwrite($stream, $string);
         rewind($stream);
+
         return $this->readFilePointer($stream);
     }
 
+    /**
+     * Get a string with the current NBT root data in NBT format.
+     *
+     * @return string
+     */
     public function writeString()
     {
         $stream = fopen('php://memory', 'r+b');
         $this->writeFilePointer($stream);
         rewind($stream);
+
         return stream_get_contents($stream);
     }
 
+    /**
+     * Purge all loaded data.
+     */
     public function purge()
     {
         if ($this->verbose) {
@@ -122,7 +169,15 @@ class Service
         $this->root = array();
     }
 
-    public function traverseTag($fPtr, &$tree)
+    /**
+     * Read the next tag from the stream.
+     *
+     * @param resource $fPtr Stream pointer
+     * @param array    $tree Tree array to write to
+     *
+     * @return bool
+     */
+    private function traverseTag($fPtr, &$tree)
     {
         if (feof($fPtr)) {
             if ($this->verbose) {
@@ -131,7 +186,8 @@ class Service
 
             return false;
         }
-        $tagType = $this->readType($fPtr, self::TAG_BYTE); // Read type byte.
+        // Read type byte
+        $tagType = $this->readType($fPtr, self::TAG_BYTE);
         if ($tagType == self::TAG_END) {
             return false;
         } else {
@@ -149,7 +205,15 @@ class Service
         }
     }
 
-    public function writeTag($fPtr, $tag)
+    /**
+     * Write the given tag to the stream.
+     *
+     * @param resource $fPtr Stream pointer
+     * @param array    $tag  Tag to write
+     *
+     * @return bool
+     */
+    private function writeTag($fPtr, $tag)
     {
         if ($this->verbose) {
             $position = ftell($fPtr);
@@ -164,7 +228,15 @@ class Service
             && $this->writeType($fPtr, $tag['type'], $tag['value']);
     }
 
-    public function readType($fPtr, $tagType)
+    /**
+     * Read an individual type from the stream.
+     *
+     * @param resource $fPtr    Stream pointer
+     * @param int      $tagType Tag to read
+     *
+     * @return mixed
+     */
+    private function readType($fPtr, $tagType)
     {
         switch ($tagType) {
             case self::TAG_BYTE: // Signed byte (8 bit)
@@ -269,7 +341,16 @@ class Service
         }
     }
 
-    public function writeType($fPtr, $tagType, $value)
+    /**
+     * Write an individual type to the stream.
+     *
+     * @param resource $fPtr    Stream pointer
+     * @param int      $tagType Type of tag to write
+     * @param mixed    $value   Value of tag to write
+     *
+     * @return bool
+     */
+    private function writeType($fPtr, $tagType, $value)
     {
         switch ($tagType) {
             case self::TAG_BYTE: // Signed byte (8 bit)
