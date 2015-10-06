@@ -45,32 +45,33 @@ class Service
     const TAG_COMPOUND = 10;
     const TAG_INT_ARRAY = 11;
 
-    public function __construct($filename = null, $wrapper = 'compress.zlib://')
-    {
-        // PHP 5 constructor (just in case PHP 4-style constructors are ever deprecated)
-        if (!is_null($filename)) {
-            $this->loadFile($filename, $wrapper);
-        }
-    }
-
     public function loadFile($filename, $wrapper = 'compress.zlib://')
     {
-        if (is_string($wrapper) && is_file($filename)) {
+        if (is_file($filename))
+        {
             if ($this->verbose) {
                 trigger_error("Loading file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
             }
             $fPtr = fopen("{$wrapper}{$filename}", 'rb');
-        } elseif (is_null($wrapper) && is_resource($filename)) {
-            if ($this->verbose) {
-                trigger_error('Loading file from existing resource.', E_USER_NOTICE);
-            }
-            $fPtr = $filename;
+            return $this->readFilePointer($fPtr);
         } else {
-            trigger_error('First parameter must be a filename or a resource.', E_USER_WARNING);
-
+            trigger_error('First parameter must be a filename.', E_USER_WARNING);
             return false;
         }
+    }
 
+    public function writeFile($filename, $wrapper = 'compress.zlib://')
+    {
+        if ($this->verbose) {
+            trigger_error("Writing file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
+        }
+        $fPtr = fopen("{$wrapper}{$filename}", 'wb');
+        $this->writeFilePointer($fPtr);
+        fclose($fPtr);
+    }
+
+    public function readFilePointer($fPtr)
+    {
         if ($this->verbose) {
             trigger_error('Traversing first tag in file.', E_USER_NOTICE);
         }
@@ -84,23 +85,8 @@ class Service
         return end($this->root);
     }
 
-    public function writeFile($filename, $wrapper = 'compress.zlib://')
+    public function writeFilePointer($fPtr)
     {
-        if (is_string($wrapper)) {
-            if ($this->verbose) {
-                trigger_error("Writing file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
-            }
-            $fPtr = fopen("{$wrapper}{$filename}", 'wb');
-        } elseif (is_null($wrapper) && is_resource($filename)) {
-            if ($this->verbose) {
-                trigger_error('Writing file to existing resource.', E_USER_NOTICE);
-            }
-            $fPtr = $filename;
-        } else {
-            trigger_error('First parameter must be a filename or a resource.', E_USER_WARNING);
-
-            return false;
-        }
         if ($this->verbose) {
             trigger_error('Writing '.count($this->root).' root tag(s) to file/resource.', E_USER_NOTICE);
         }
@@ -109,8 +95,23 @@ class Service
                 trigger_error("Failed to write root tag #{$rootNum} to file/resource.", E_USER_WARNING);
             }
         }
-
         return true;
+    }
+
+    public function readString($string)
+    {
+        $stream = fopen('php://memory', 'r+b');
+        fwrite($stream, $string);
+        rewind($stream);
+        return $this->readFilePointer($stream);
+    }
+
+    public function writeString()
+    {
+        $stream = fopen('php://memory', 'r+b');
+        $this->writeFilePointer($stream);
+        rewind($stream);
+        return stream_get_contents($stream);
     }
 
     public function purge()
