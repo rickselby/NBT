@@ -17,6 +17,12 @@ There are two main 'versions'; the one by TheFrozenFire, continued by crafting-s
 
 Ideally they'd all get pulled back into the main repo, so we just have one version; but it doesn't look like that's going to happen.
 
+### What's different here?
+
+I've split the <tt>loadFile()</tt> function into separate functions for opening files by filename, passing in a file pointer, or passing in a string.
+This tidies up the code, but breaks backwards compatibility, so this is a new major version.
+
+
 ## Installing
 ### Composer
 
@@ -31,11 +37,7 @@ The library can be pulled in using composer; add the following to your composer.
         }
     ],
     "require": {
-        "rickselby/PHP-NBT-Decoder-Encoder": "1.0.*"
+        "rickselby/PHP-NBT-Decoder-Encoder": "2.0.*"
     }
 }
 ```
-
-## Future work
-
-Version 2.0 will work with strings, not files, which will give it more flexibility when being used with region files.
