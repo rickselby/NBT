@@ -9,6 +9,14 @@ right extensions, and that there's nothing funky with your configuration.
 
 **Requires the GMP Extension for PHP on 32-bit builds.**
 
+## Why another fork?
+
+If you look at the [network from TheFrozenFire's orginal repo](//github.com/TheFrozenFire/PHP-NBT-Decoder-Encoder/network), it's beek forked many times already, and I've just made another.
+
+There are two main 'versions'; the one by TheFrozenFire, continued by crafting-shards; and one forked by jegol, and continued by Caffe1neAdd1ct, sumpygump and now myself. The former is missing the definition for TAG_INT_ARRAY (which I believe is only used in maps); however, crafting-shards did fix the bug with writing to an existing file pointer. Neither worked out-of-the-box for my requirements, so I needed to fork one, and I picked the one with TAG_INT_ARRAY already included.
+
+Ideally they'd all get pulled back into the main repo, so we just have one version; but it doesn't look like that's going to happen.
+
 ## Installing
 ### Composer
 
