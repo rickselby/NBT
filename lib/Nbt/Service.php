@@ -29,8 +29,6 @@ if (PHP_INT_SIZE < 8) {
 
 class Service
 {
-    /** @var array The NBT 'tree' **/
-    public $root = array();
     /** @var bool Enable verbose output or not **/
     public $verbose = false;
 
@@ -102,13 +100,14 @@ class Service
             trigger_error('Traversing first tag in file.', E_USER_NOTICE);
         }
 
-        $this->traverseTag($fPtr, $this->root);
+        $treeRoot = new \Tree\Node\Node();
+        $this->traverseTag($fPtr, $treeRoot);
 
         if ($this->verbose) {
             trigger_error('Encountered end tag for first tag; finished.', E_USER_NOTICE);
         }
 
-        return end($this->root);
+        return $treeRoot;
     }
 
     /**
@@ -159,25 +158,14 @@ class Service
     }
 
     /**
-     * Purge all loaded data.
-     */
-    public function purge()
-    {
-        if ($this->verbose) {
-            trigger_error('Purging all loaded data', E_USER_ERROR);
-        }
-        $this->root = array();
-    }
-
-    /**
      * Read the next tag from the stream.
      *
-     * @param resource $fPtr Stream pointer
-     * @param array    $tree Tree array to write to
+     * @param resource       $fPtr Stream pointer
+     * @param \Tree\Node\Node $node Tree array to write to
      *
      * @return bool
      */
-    private function traverseTag($fPtr, &$tree)
+    private function traverseTag($fPtr, &$node)
     {
         if (feof($fPtr)) {
             if ($this->verbose) {
@@ -187,19 +175,30 @@ class Service
             return false;
         }
         // Read type byte
-        $tagType = $this->readType($fPtr, self::TAG_BYTE);
+        $tagType = $this->getTAGByte($fPtr);
         if ($tagType == self::TAG_END) {
             return false;
         } else {
             if ($this->verbose) {
                 $position = ftell($fPtr);
             }
-            $tagName = $this->readType($fPtr, self::TAG_STRING);
+            $tagName = $this->getTAGString($fPtr);
             if ($this->verbose) {
                 trigger_error("Reading tag \"{$tagName}\" at offset {$position}.", E_USER_NOTICE);
             }
-            $tagData = $this->readType($fPtr, $tagType);
-            $tree[ ] = array('type' => $tagType, 'name' => $tagName, 'value' => $tagData);
+            $node->setValue(['type' => $tagType, 'name' => $tagName]);
+            $this->readType($fPtr, $tagType, $node);
+
+            /*
+            if ($tagData instanceof \Tree\Node\Node) {
+                $node->setValue(['type' => $tagType, 'name' => $tagName]);
+                $node->addChild($tagData);
+            } else {
+                // If value is a node
+                $node->setValue(['type' => $tagType, 'name' => $tagName, 'value' => $tagData]);
+#            $tree[ ] = array('type' => $tagType, 'name' => $tagName, 'value' => $tagData);
+            }
+             */
 
             return true;
         }
@@ -231,30 +230,24 @@ class Service
     /**
      * Read an individual type from the stream.
      *
-     * @param resource $fPtr    Stream pointer
-     * @param int      $tagType Tag to read
+     * @param resource        $fPtr    Stream pointer
+     * @param int             $tagType Tag to read
+     * @param \Tree\Node\Node $node    Node to add data to
      *
      * @return mixed
      */
-    private function readType($fPtr, $tagType)
+    private function readType($fPtr, $tagType, $node = null)
     {
         switch ($tagType) {
             case self::TAG_BYTE: // Signed byte (8 bit)
-                list(, $unpacked) = unpack('c', fread($fPtr, 1));
-
-                return $unpacked;
+                $this->addValueToNode($node, $this->getTAGByte($fPtr));
+                break;
             case self::TAG_SHORT: // Signed short (16 bit, big endian)
-                list(, $unpacked) = unpack('n', fread($fPtr, 2));
-                if ($unpacked >= pow(2, 15)) {
-                    $unpacked -= pow(2, 16);
-                } // Convert unsigned short to signed short.
-                return $unpacked;
+                $this->addValueToNode($node, $this->getTAGShort($fPtr));
+                break;
             case self::TAG_INT: // Signed integer (32 bit, big endian)
-                list(, $unpacked) = unpack('N', fread($fPtr, 4));
-                if ($unpacked >= pow(2, 31)) {
-                    $unpacked -= pow(2, 32);
-                } // Convert unsigned int to signed int
-                return $unpacked;
+                $this->addValueToNode($node, $this->getTAGInt($fPtr));
+                break;
             case self::TAG_LONG: // Signed long (64 bit, big endian)
                 list(, $firstHalf, $secondHalf) = unpack('N*', fread($fPtr, 8));
                 if (PHP_INT_SIZE >= 8) {
@@ -285,60 +278,138 @@ class Service
                     }
                     $value = gmp_strval($value);
                 }
-
-                return $value;
+                $this->addValueToNode($node, $value);
+                break;
             case self::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('f', fread($fPtr, 4))
                     : unpack('f', strrev(fread($fPtr, 4)));
-
-                return $value;
+                $this->addValueToNode($node, $value);
+                break;
             case self::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('d', fread($fPtr, 8))
                     : unpack('d', strrev(fread($fPtr, 8)));
-
-                return $value;
+                $this->addValueToNode($node, $value);
+                break;
             case self::TAG_BYTE_ARRAY: // Byte array
-                $arrayLength = $this->readType($fPtr, self::TAG_INT);
+                $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('c*', fread($fPtr, $arrayLength)));
 
-                return $array;
+                $this->addValueToNode($node, $array);
+                break;
             case self::TAG_STRING: // String
-                if (!$stringLength = $this->readType($fPtr, self::TAG_SHORT)) {
-                    return '';
-                }
-                // Read in number of bytes specified by string length, and decode from utf8.
-                $string = utf8_decode(fread($fPtr, $stringLength));
-
-                return $string;
+                $this->addValueToNode($node, $this->getTAGString($fPtr));
+                break;
             case self::TAG_LIST: // List
-                $tagID = $this->readType($fPtr, self::TAG_BYTE);
-                $listLength = $this->readType($fPtr, self::TAG_INT);
+                $tagID = $this->getTAGByte($fPtr);
+                $listLength = $this->getTAGInt($fPtr);
                 if ($this->verbose) {
                     trigger_error("Reading in list of {$listLength} tags of type {$tagID}.", E_USER_NOTICE);
                 }
-                $list = array('type' => $tagID, 'value' => array());
+
+                // Add a reference to the payload type
+                $value = $node->getValue();
+                $value['payloadType'] = $tagID;
+                $node->setValue($value);
+
                 for ($i = 0; $i < $listLength; ++$i) {
                     if (feof($fPtr)) {
                         break;
                     }
-                    $list['value'][] = $this->readType($fPtr, $tagID);
+                    $listNode = new \Tree\Node\Node();
+                    $this->readType($fPtr, $tagID, $listNode);
+                    $node->addChild($listNode);
                 }
-
-                return $list;
+                break;
             case self::TAG_COMPOUND: // Compound
-                $tree = array();
-                while ($this->traverseTag($fPtr, $tree)) {
+                // Uck. Don't know a better way to do this,
+                $compoundNode = new \Tree\Node\Node();
+                while ($this->traverseTag($fPtr, $compoundNode)) {
+                    $node->addChild($compoundNode);
+                    // Reset the node for adding the next tags
+                    $compoundNode = new \Tree\Node\Node();
                 }
-
-                return $tree;
+                break;
             case self::TAG_INT_ARRAY:
-                $arrayLength = $this->readType($fPtr, self::TAG_INT);
+                $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('N*', fread($fPtr, $arrayLength * 4)));
-
-                return $array;
+                $this->addValueToNode($node, $array);
+                break;
         }
+    }
+
+    /**
+     * Read a byte tag from the file
+     *
+     * @param resource $fPtr
+     *
+     * @return byte
+     */
+    private function getTAGByte($fPtr)
+    {
+        return unpack('c', fread($fPtr, 1))[1];
+    }
+
+    /**
+     * Read a string from the file
+     *
+     * @param resource $fPtr
+     *
+     * @return string
+     */
+    private function getTAGString($fPtr)
+    {
+        if (!$stringLength = $this->getTAGShort($fPtr)) {
+            return '';
+        }
+        // Read in number of bytes specified by string length, and decode from utf8.
+        return utf8_decode(fread($fPtr, $stringLength));
+    }
+
+    /**
+     * Read a short int from the file
+     *
+     * @param resource $fPtr
+     *
+     * @return integer
+     */
+    private function getTAGShort($fPtr)
+    {
+        return $this->unsignedToSigned(
+                unpack('n', fread($fPtr, 2))[1],
+                16
+        );
+    }
+
+    /**
+     * Get an int from the file
+     * @param resource $fPtr
+     * @return integer
+     */
+    private function getTAGInt($fPtr)
+    {
+        return $this->unsignedToSigned(
+                unpack('N', fread($fPtr, 4))[1],
+                32
+        );
+
+    }
+
+    /**
+     * Convert an unsigned int to signed, if required
+     *
+     * @param integer $value
+     * @param integer $size
+     *
+     * @return integer
+     */
+    private function unsignedToSigned($value, $size)
+    {
+        if ($value >= pow(2, $size-1)) {
+            $value -= pow(2, $size);
+        }
+        return $value;
     }
 
     /**
@@ -459,5 +530,17 @@ class Service
                         )
                     ));
         }
+    }
+
+    /**
+     * Add a value to the given node.
+     *
+     * @param \Tree\Node\Node $node
+     */
+    private function addValueToNode(&$node, $value)
+    {
+        $nodeValue = $node->getValue();
+        $nodeValue['value'] = $value;
+        $node->setValue($nodeValue);
     }
 }
