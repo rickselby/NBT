@@ -4,12 +4,7 @@
  * Class for reading in NBT-format files.
  *
  * @author  Justin Martin <frozenfire@thefrozenfire.com>
- *
- * @version 1.0
- *
- * Dependencies:
- *  PHP 4.3+ (5.3+ recommended)
- *  GMP Extension
+ * @author  Rick Selby <rick@selby-family.co.uk>
  */
 namespace Nbt;
 
@@ -29,8 +24,6 @@ if (PHP_INT_SIZE < 8) {
 
 class Service
 {
-    /** @var array The NBT 'tree' **/
-    public $root = array();
     /** @var bool Enable verbose output or not **/
     public $verbose = false;
 
@@ -53,7 +46,7 @@ class Service
      * @param string $filename File to open
      * @param string $wrapper  [optional] Stream wrapper if not zlib
      *
-     * @return array|false
+     * @return Node|false
      */
     public function loadFile($filename, $wrapper = 'compress.zlib://')
     {
@@ -75,17 +68,18 @@ class Service
      * Write the current NBT root data to a file.
      *
      * @param string $filename File to write to
+     * @param Node   $tree     Root of the tree to write
      * @param string $wrapper  [optional] Stream wrapper if not zlib
      *
      * @return true
      */
-    public function writeFile($filename, $wrapper = 'compress.zlib://')
+    public function writeFile($filename, $tree, $wrapper = 'compress.zlib://')
     {
         if ($this->verbose) {
             trigger_error("Writing file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
         }
         $fPtr = fopen("{$wrapper}{$filename}", 'wb');
-        $this->writeFilePointer($fPtr);
+        $this->writeFilePointer($fPtr, $tree);
         fclose($fPtr);
     }
 
@@ -94,7 +88,7 @@ class Service
      *
      * @param resource $fPtr File/Stream pointer
      *
-     * @return array
+     * @return Node
      */
     public function readFilePointer($fPtr)
     {
@@ -102,29 +96,26 @@ class Service
             trigger_error('Traversing first tag in file.', E_USER_NOTICE);
         }
 
-        $this->traverseTag($fPtr, $this->root);
+        $treeRoot = new Node();
+        $this->traverseTag($fPtr, $treeRoot);
 
         if ($this->verbose) {
             trigger_error('Encountered end tag for first tag; finished.', E_USER_NOTICE);
         }
 
-        return end($this->root);
+        return $treeRoot;
     }
 
     /**
      * Write the current NBT root data to the given file pointer.
      *
      * @param resource $fPtr File/Stream pointer
+     * @param Node     $tree Root of the tree to write
      */
-    public function writeFilePointer($fPtr)
+    public function writeFilePointer($fPtr, $tree)
     {
-        if ($this->verbose) {
-            trigger_error('Writing '.count($this->root).' root tag(s) to file/resource.', E_USER_NOTICE);
-        }
-        foreach ($this->root as $rootNum => $rootTag) {
-            if (!$this->writeTag($fPtr, $rootTag)) {
-                trigger_error("Failed to write root tag #{$rootNum} to file/resource.", E_USER_WARNING);
-            }
+        if (!$this->writeTag($fPtr, $tree)) {
+            trigger_error('Failed to write tree to file/resource.', E_USER_WARNING);
         }
     }
 
@@ -133,7 +124,7 @@ class Service
      *
      * @param string $string String containing NBT data
      *
-     * @return array
+     * @return Node
      */
     public function readString($string)
     {
@@ -147,37 +138,28 @@ class Service
     /**
      * Get a string with the current NBT root data in NBT format.
      *
+     * @param Node $tree Root of the tree to write
+     *
      * @return string
      */
-    public function writeString()
+    public function writeString($tree)
     {
         $stream = fopen('php://memory', 'r+b');
-        $this->writeFilePointer($stream);
+        $this->writeFilePointer($stream, $tree);
         rewind($stream);
 
         return stream_get_contents($stream);
     }
 
     /**
-     * Purge all loaded data.
-     */
-    public function purge()
-    {
-        if ($this->verbose) {
-            trigger_error('Purging all loaded data', E_USER_ERROR);
-        }
-        $this->root = array();
-    }
-
-    /**
      * Read the next tag from the stream.
      *
      * @param resource $fPtr Stream pointer
-     * @param array    $tree Tree array to write to
+     * @param Node     $node Tree array to write to
      *
      * @return bool
      */
-    private function traverseTag($fPtr, &$tree)
+    private function traverseTag($fPtr, &$node)
     {
         if (feof($fPtr)) {
             if ($this->verbose) {
@@ -187,19 +169,20 @@ class Service
             return false;
         }
         // Read type byte
-        $tagType = $this->readType($fPtr, self::TAG_BYTE);
+        $tagType = $this->getTAGByte($fPtr);
         if ($tagType == self::TAG_END) {
             return false;
         } else {
+            $node->setKey('type', $tagType);
             if ($this->verbose) {
                 $position = ftell($fPtr);
             }
-            $tagName = $this->readType($fPtr, self::TAG_STRING);
+            $tagName = $this->getTAGString($fPtr);
             if ($this->verbose) {
                 trigger_error("Reading tag \"{$tagName}\" at offset {$position}.", E_USER_NOTICE);
             }
-            $tagData = $this->readType($fPtr, $tagType);
-            $tree[ ] = array('type' => $tagType, 'name' => $tagName, 'value' => $tagData);
+            $node->setKey('name', $tagName);
+            $this->readType($fPtr, $tagType, $node);
 
             return true;
         }
@@ -209,23 +192,23 @@ class Service
      * Write the given tag to the stream.
      *
      * @param resource $fPtr Stream pointer
-     * @param array    $tag  Tag to write
+     * @param Node     $node Tag to write
      *
      * @return bool
      */
-    private function writeTag($fPtr, $tag)
+    private function writeTag($fPtr, $node)
     {
         if ($this->verbose) {
             $position = ftell($fPtr);
             trigger_error(
-                "Writing tag \"{$tag['name']}\" of type {$tag['type']} at offset {$position}.",
+                "Writing tag \"{$node->getKey('name')}\" of type {$node->getKey('type')} at offset {$position}.",
                 E_USER_NOTICE
             );
         }
 
-        return $this->writeType($fPtr, self::TAG_BYTE, $tag['type'])
-            && $this->writeType($fPtr, self::TAG_STRING, $tag['name'])
-            && $this->writeType($fPtr, $tag['type'], $tag['value']);
+        return $this->putTAGByte($fPtr, $node->getKey('type'))
+            && $this->putTAGString($fPtr, $node->getKey('name'))
+            && $this->writeType($fPtr, $node->getKey('type'), $node);
     }
 
     /**
@@ -233,28 +216,22 @@ class Service
      *
      * @param resource $fPtr    Stream pointer
      * @param int      $tagType Tag to read
+     * @param Node     $node    Node to add data to
      *
      * @return mixed
      */
-    private function readType($fPtr, $tagType)
+    private function readType($fPtr, $tagType, $node = null)
     {
         switch ($tagType) {
             case self::TAG_BYTE: // Signed byte (8 bit)
-                list(, $unpacked) = unpack('c', fread($fPtr, 1));
-
-                return $unpacked;
+                $node->setKey('value', $this->getTAGByte($fPtr));
+                break;
             case self::TAG_SHORT: // Signed short (16 bit, big endian)
-                list(, $unpacked) = unpack('n', fread($fPtr, 2));
-                if ($unpacked >= pow(2, 15)) {
-                    $unpacked -= pow(2, 16);
-                } // Convert unsigned short to signed short.
-                return $unpacked;
+                $node->setKey('value', $this->getTAGShort($fPtr));
+                break;
             case self::TAG_INT: // Signed integer (32 bit, big endian)
-                list(, $unpacked) = unpack('N', fread($fPtr, 4));
-                if ($unpacked >= pow(2, 31)) {
-                    $unpacked -= pow(2, 32);
-                } // Convert unsigned int to signed int
-                return $unpacked;
+                $node->setKey('value', $this->getTAGInt($fPtr));
+                break;
             case self::TAG_LONG: // Signed long (64 bit, big endian)
                 list(, $firstHalf, $secondHalf) = unpack('N*', fread($fPtr, 8));
                 if (PHP_INT_SIZE >= 8) {
@@ -285,60 +262,137 @@ class Service
                     }
                     $value = gmp_strval($value);
                 }
-
-                return $value;
+                $node->setKey('value', $value);
+                break;
             case self::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('f', fread($fPtr, 4))
                     : unpack('f', strrev(fread($fPtr, 4)));
-
-                return $value;
+                $node->setKey('value', $value);
+                break;
             case self::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('d', fread($fPtr, 8))
                     : unpack('d', strrev(fread($fPtr, 8)));
-
-                return $value;
+                $node->setKey('value', $value);
+                break;
             case self::TAG_BYTE_ARRAY: // Byte array
-                $arrayLength = $this->readType($fPtr, self::TAG_INT);
+                $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('c*', fread($fPtr, $arrayLength)));
-
-                return $array;
+                $node->setKey('value', $array);
+                break;
             case self::TAG_STRING: // String
-                if (!$stringLength = $this->readType($fPtr, self::TAG_SHORT)) {
-                    return '';
-                }
-                // Read in number of bytes specified by string length, and decode from utf8.
-                $string = utf8_decode(fread($fPtr, $stringLength));
-
-                return $string;
+                $node->setKey('value', $this->getTAGString($fPtr));
+                break;
             case self::TAG_LIST: // List
-                $tagID = $this->readType($fPtr, self::TAG_BYTE);
-                $listLength = $this->readType($fPtr, self::TAG_INT);
+                $tagID = $this->getTAGByte($fPtr);
+                $listLength = $this->getTAGInt($fPtr);
                 if ($this->verbose) {
                     trigger_error("Reading in list of {$listLength} tags of type {$tagID}.", E_USER_NOTICE);
                 }
-                $list = array('type' => $tagID, 'value' => array());
+
+                // Add a reference to the payload type
+                $node->setKey('payloadType', $tagID);
+
                 for ($i = 0; $i < $listLength; ++$i) {
                     if (feof($fPtr)) {
                         break;
                     }
-                    $list['value'][] = $this->readType($fPtr, $tagID);
+                    $listNode = new Node();
+                    $this->readType($fPtr, $tagID, $listNode);
+                    $node->addChild($listNode);
                 }
-
-                return $list;
+                break;
             case self::TAG_COMPOUND: // Compound
-                $tree = array();
-                while ($this->traverseTag($fPtr, $tree)) {
+                // Uck. Don't know a better way to do this,
+                $compoundNode = new Node();
+                while ($this->traverseTag($fPtr, $compoundNode)) {
+                    $node->addChild($compoundNode);
+                    // Reset the node for adding the next tags
+                    $compoundNode = new Node();
                 }
-
-                return $tree;
+                break;
             case self::TAG_INT_ARRAY:
-                $arrayLength = $this->readType($fPtr, self::TAG_INT);
+                $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('N*', fread($fPtr, $arrayLength * 4)));
-
-                return $array;
+                $node->setKey('value', $array);
+                break;
         }
+    }
+
+    /**
+     * Read a byte tag from the file.
+     *
+     * @param resource $fPtr
+     *
+     * @return byte
+     */
+    private function getTAGByte($fPtr)
+    {
+        return unpack('c', fread($fPtr, 1))[1];
+    }
+
+    /**
+     * Read a string from the file.
+     *
+     * @param resource $fPtr
+     *
+     * @return string
+     */
+    private function getTAGString($fPtr)
+    {
+        if (!$stringLength = $this->getTAGShort($fPtr)) {
+            return '';
+        }
+        // Read in number of bytes specified by string length, and decode from utf8.
+        return utf8_decode(fread($fPtr, $stringLength));
+    }
+
+    /**
+     * Read a short int from the file.
+     *
+     * @param resource $fPtr
+     *
+     * @return int
+     */
+    private function getTAGShort($fPtr)
+    {
+        return $this->unsignedToSigned(
+            unpack('n', fread($fPtr, 2))[1],
+            16
+        );
+    }
+
+    /**
+     * Get an int from the file.
+     *
+     * @param resource $fPtr
+     *
+     * @return int
+     */
+    private function getTAGInt($fPtr)
+    {
+        return $this->unsignedToSigned(
+            unpack('N', fread($fPtr, 4))[1],
+            32
+        );
+    }
+
+    /**
+     * Convert an unsigned int to signed, if required.
+     *
+     * @param int $value
+     * @param int $size
+     *
+     * @return int
+     */
+    private function unsignedToSigned($value, $size)
+    {
+        if ($value >= pow(2, $size - 1)) {
+            $value -= pow(2, $size);
+        }
+
+        return $value;
     }
 
     /**
@@ -346,26 +400,21 @@ class Service
      *
      * @param resource $fPtr    Stream pointer
      * @param int      $tagType Type of tag to write
-     * @param mixed    $value   Value of tag to write
+     * @param Node     $node    Node containing value to write
      *
      * @return bool
      */
-    private function writeType($fPtr, $tagType, $value)
+    private function writeType($fPtr, $tagType, $node)
     {
         switch ($tagType) {
             case self::TAG_BYTE: // Signed byte (8 bit)
-                return is_int(fwrite($fPtr, pack('c', $value)));
+                return $this->putTAGByte($fPtr, $node->getKey('value'));
             case self::TAG_SHORT: // Signed short (16 bit, big endian)
-                if ($value < 0) {
-                    $value += pow(2, 16);
-                } // Convert signed short to unsigned short
-                return is_int(fwrite($fPtr, pack('n', $value)));
+                return $this->putTAGShort($fPtr, $node->getKey('value'));
             case self::TAG_INT: // Signed integer (32 bit, big endian)
-                if ($value < 0) {
-                    $value += pow(2, 32);
-                } // Convert signed int to unsigned int
-                return is_int(fwrite($fPtr, pack('N', $value)));
+                return $this->putTAGInt($fPtr, $node->getKey('value'));
             case self::TAG_LONG: // Signed long (64 bit, big endian)
+                $value = $node->getKey('value');
                 if (PHP_INT_SIZE >= 8) {
                     $firstHalf = ($value & 0xFFFFFFFF00000000) >> 32;
                     $secondHalf = $value & 0xFFFFFFFF;
@@ -400,64 +449,145 @@ class Service
 
                 return $wResult;
             case self::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
+                $value = $node->getKey('value');
+
                 return is_int(fwrite($fPtr, (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? pack('f', $value)
                     : strrev(pack('f', $value))));
             case self::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
+                $value = $node->getKey('value');
+
                 return is_int(fwrite($fPtr, (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? pack('d', $value)
                     : strrev(pack('d', $value))));
             case self::TAG_BYTE_ARRAY: // Byte array
-                return $this->writeType($fPtr, self::TAG_INT, count($value))
+                $value = $node->getKey('value');
+
+                return $this->putTAGInt($fPtr, count($value))
                     && is_int(fwrite(
                         $fPtr,
                         call_user_func_array(
                             'pack',
-                            array_merge(array('c'.count($value)), $value)
+                            array_merge(['c'.count($value)], $value)
                         )
                     ));
             case self::TAG_STRING: // String
-                $value = utf8_encode($value);
-
-                return $this->writeType($fPtr, self::TAG_SHORT, strlen($value)) && is_int(fwrite($fPtr, $value));
+                return $this->putTAGString($fPtr, $node->getKey('value'));
             case self::TAG_LIST: // List
                 if ($this->verbose) {
                     trigger_error(
-                        'Writing list of '.count($value['value'])." tags of type {$value['type']}.",
+                        'Writing list of '.count($node->getChildren())." tags of type {$node->getKey('payloadType')}.",
                         E_USER_NOTICE
                     );
                 }
-                if (!($this->writeType($fPtr, self::TAG_BYTE, $value['type'])
-                    && $this->writeType($fPtr, self::TAG_INT, count($value['value'])))) {
+                if (!($this->putTAGByte($fPtr, $node->getKey('payloadType'))
+                    && $this->putTAGInt($fPtr, count($node->getChildren()))
+                    )) {
                     return false;
                 }
-                foreach ($value['value'] as $listItem) {
-                    if (!$this->writeType($fPtr, $value['type'], $listItem)) {
+                foreach ($node->getChildren() as $childNode) {
+                    if (!$this->writeType($fPtr, $node->getKey('payloadType'), $childNode)) {
                         return false;
                     }
                 }
 
                 return true;
             case self::TAG_COMPOUND: // Compound
-                foreach ($value as $listItem) {
-                    if (!$this->writeTag($fPtr, $listItem)) {
+                foreach ($node->getChildren() as $childNode) {
+                    if (!$this->writeTag($fPtr, $childNode)) {
                         return false;
                     }
                 }
-                if (!is_int(fwrite($fPtr, "\0"))) {
+                if (!$this->writeType($fPtr, self::TAG_END, null)) {
                     return false;
                 }
 
                 return true;
             case self::TAG_INT_ARRAY: // Byte array
-                return $this->writeType($fPtr, self::TAG_INT, count($value))
+                $value = $node->getKey('value');
+
+                return $this->putTAGInt($fPtr, count($value))
                     && is_int(fwrite(
                         $fPtr,
                         call_user_func_array(
                             'pack',
-                            array_merge(array('N'.count($value)), $value)
+                            array_merge(['N'.count($value)], $value)
                         )
                     ));
+            case self::TAG_END: // End tag
+                return is_int(fwrite($fPtr, "\0"));
         }
+    }
+
+    /**
+     * Write a byte tag to the file.
+     *
+     * @param resource $fPtr
+     * @param byte     $byte
+     *
+     * @return bool
+     */
+    private function putTAGByte($fPtr, $byte)
+    {
+        return is_int(fwrite($fPtr, pack('c', $byte)));
+    }
+
+    /**
+     * Write a string to the file.
+     *
+     * @param resource $fPtr
+     * @param string   $string
+     *
+     * @return bool
+     */
+    private function putTAGString($fPtr, $string)
+    {
+        $value = utf8_encode($string);
+
+        return $this->putTAGShort($fPtr, strlen($value))
+                && is_int(fwrite($fPtr, $value));
+    }
+
+    /**
+     * Write a short int to the file.
+     *
+     * @param resource $fPtr
+     * @param int      $short
+     *
+     * @return bool
+     */
+    private function putTAGShort($fPtr, $short)
+    {
+        return is_int(fwrite($fPtr, pack('n', $this->signedToUnsigned($short, 16))));
+    }
+
+    /**
+     * Write an integer to the file.
+     *
+     * @param resource $fPtr
+     * @param int      $int
+     *
+     * @return bool
+     */
+    private function putTAGInt($fPtr, $int)
+    {
+        return is_int(fwrite($fPtr, pack('N', $this->signedToUnsigned($int, 32))));
+    }
+
+    /**
+     * Convert an unsigned int to signed, if required.
+     *
+     * @param int $value
+     * @param int $size
+     *
+     * @return int
+     */
+    private function signedToUnsigned($value, $size)
+    {
+        if ($value < 0) {
+            $value += pow(2, $size);
+        }
+
+        return $value;
     }
 }
