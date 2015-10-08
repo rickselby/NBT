@@ -11,12 +11,11 @@ class Node implements \Tree\Node\NodeInterface
 {
     use \Tree\Node\NodeTrait {
         __construct as private __traitConstruct;
-        // Don't allow the value to be updated directly
-        setValue as private;
     }
 
     /**
-     * Create a node, optionally passing an array of children
+     * Create a node, optionally passing an array of children.
+     *
      * @param array $children
      */
     public function __construct($children = [])
@@ -25,7 +24,18 @@ class Node implements \Tree\Node\NodeInterface
     }
 
     /**
-     * Set a key for the current node
+     * Override the setValue method to do nothing.
+     *
+     * @param mixed $value
+     */
+    public function setValue($value)
+    {
+        ;
+    }
+
+    /**
+     * Set a key for the current node.
+     *
      * @param string $key
      * @param mixed  $value
      */
@@ -35,8 +45,10 @@ class Node implements \Tree\Node\NodeInterface
     }
 
     /**
-     * Get a key for the current node
+     * Get a key for the current node.
+     *
      * @param string $key
+     *
      * @return mixed
      */
     public function getKey($key)

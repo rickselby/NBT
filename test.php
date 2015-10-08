@@ -1,7 +1,7 @@
 <?php
 
 error_reporting(E_ALL);
-require_once 'vendor/autoload.php';
+require_once 'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
 
 $nbt = new Nbt\Service();
 $nbt->verbose = true;
