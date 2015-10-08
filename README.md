@@ -22,6 +22,9 @@ Ideally they'd all get pulled back into the main repo, so we just have one versi
 I've split the <tt>loadFile()</tt> function into separate functions for opening files by filename, passing in a file pointer, or passing in a string.
 This tidies up the code, but breaks backwards compatibility, so this is a new major version.
 
+I've changed the NBT data format from an array to a tree, to make traversing and editing easier.
+
+I've made the load..() and read..() functions return the tree, rather than setting $nbt->root.
 
 ## Installing
 ### Composer
@@ -37,7 +40,7 @@ The library can be pulled in using composer; add the following to your composer.
         }
     ],
     "require": {
-        "rickselby/PHP-NBT-Decoder-Encoder": "2.0.*"
+        "rickselby/PHP-NBT-Decoder-Encoder": "~3.0"
     }
 }
 ```
