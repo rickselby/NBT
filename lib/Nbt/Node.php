@@ -31,6 +31,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setType($type)
     {
         $this->value['type'] = $type;
+        return $this;
     }
 
     /**
@@ -41,6 +42,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setName($name)
     {
         $this->value['name'] = $name;
+        return $this;
     }
 
     /**
@@ -51,6 +53,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setValue($value)
     {
         $this->value['value'] = $value;
+        return $this;
     }
 
     /**
@@ -61,6 +64,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setPayloadType($type)
     {
         $this->value['payloadType'] = $type;
+        return $this;
     }
 
     /**
@@ -123,8 +127,24 @@ class Node implements \Tree\Node\NodeInterface
      */
     public function getKey($key)
     {
-        if (isset($this->value[$key])) {
+        if (array_key_exists($key, $this->value)) {
             return $this->value[$key];
         }
+    }
+
+    /**
+     * Strip data out of this node to make a list payload (no name or type required)
+     */
+    public function makeListPayload()
+    {
+        if (array_key_exists('name', $this->value)) {
+            unset($this->value['name']);
+        }
+
+        if (array_key_exists('type', $this->value)) {
+            unset($this->value['type']);
+        }
+
+        return $this;
     }
 }
