@@ -20,7 +20,8 @@ class Node implements \Tree\Node\NodeInterface
      */
     public function __construct($children = [])
     {
-        $this->__traitConstruct([], $children);
+        $this->__traitConstruct(null, $children);
+        $this->value = [];
     }
 
     /**
