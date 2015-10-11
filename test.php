@@ -16,34 +16,32 @@ printTree($bigTree);
 echo PHP_EOL;
 
 echo 'Creation Test'.PHP_EOL;
-$createdTree = \Nbt\Tag::tagCompound('Level',
-    [
-        \Nbt\Tag::tagShort('shortTest', 32767),
-        \Nbt\Tag::tagInt('intTest', 2147483647),
-        \Nbt\Tag::tagLong('longTest', 9223372036854775807),
-        \Nbt\Tag::tagFloat('floatTest', '0.49823147058487'),
-        \Nbt\Tag::tagDouble('doubleTest', '0.49312871321823'),
-        \Nbt\Tag::tagByteArray('byteArrayTest', [0, 65, 54, 250, 99, 1]),
-        \Nbt\Tag::tagString('stringTest', 'HELLO WORLD!'),
-        \Nbt\Tag::tagList('listTest', \Nbt\Tag::TAG_SHORT, [
-            \Nbt\Tag::tagShort('', 1),
-            \Nbt\Tag::tagShort('', 2),
-            \Nbt\Tag::tagShort('', 3),
-            \Nbt\Tag::tagShort('', 4)
+$createdTree = \Nbt\Tag::tagCompound('Level', [
+    \Nbt\Tag::tagShort('shortTest', 32767),
+    \Nbt\Tag::tagInt('intTest', 2147483647),
+    \Nbt\Tag::tagLong('longTest', 9223372036854775807),
+    \Nbt\Tag::tagFloat('floatTest', '0.49823147058487'),
+    \Nbt\Tag::tagDouble('doubleTest', '0.49312871321823'),
+    \Nbt\Tag::tagByteArray('byteArrayTest', [0, 65, 54, 250, 99, 1]),
+    \Nbt\Tag::tagString('stringTest', 'HELLO WORLD!'),
+    \Nbt\Tag::tagList('listTest', \Nbt\Tag::TAG_SHORT, [
+        \Nbt\Tag::tagShort('', 1),
+        \Nbt\Tag::tagShort('', 2),
+        \Nbt\Tag::tagShort('', 3),
+        \Nbt\Tag::tagShort('', 4),
+    ]),
+    \Nbt\Tag::tagList('listTest', \Nbt\Tag::TAG_COMPOUND, [
+        \Nbt\Tag::tagCompound('', [
+            \Nbt\Tag::tagString('name', 'Compound tag #1'),
+            \Nbt\Tag::tagInt('value', 1),
         ]),
-        \Nbt\Tag::tagList('listTest', \Nbt\Tag::TAG_COMPOUND, [
-            \Nbt\Tag::tagCompound('', [
-                \Nbt\Tag::tagString('name', 'Compound tag #1'),
-                \Nbt\Tag::tagInt('value', 1),
-            ]),
-            \Nbt\Tag::tagCompound('', [
-                \Nbt\Tag::tagString('name', 'Compound tag #2'),
-                \Nbt\Tag::tagInt('value', 2),
-            ]),
+        \Nbt\Tag::tagCompound('', [
+            \Nbt\Tag::tagString('name', 'Compound tag #2'),
+            \Nbt\Tag::tagInt('value', 2),
         ]),
-        \Nbt\Tag::tagIntArray('intArrayTest', [1,2,3,4,5,6,7,8,9]),
-    ]
-    );
+    ]),
+    \Nbt\Tag::tagIntArray('intArrayTest', [1, 2, 3, 4, 5, 6, 7, 8, 9]),
+]);
 printTree($createdTree);
 echo PHP_EOL;
 

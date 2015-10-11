@@ -141,7 +141,7 @@ class Tag {
      * @param int    $payloadType Byte describing the payload type
      * @param Node[] $payload     Array of nodes to add as children
      *
-     * @return type
+     * @return Node
      */
     public static function tagList($name, $payloadType, $payload)
     {
@@ -163,7 +163,7 @@ class Tag {
      * @param string $name
      * @param Node[] $nodes Array of nodes to add as children
      *
-     * @return type
+     * @return Node
      */
     public static function tagCompound($name, $nodes)
     {

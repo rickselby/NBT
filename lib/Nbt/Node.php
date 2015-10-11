@@ -31,6 +31,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setType($type)
     {
         $this->value['type'] = $type;
+
         return $this;
     }
 
@@ -42,6 +43,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setName($name)
     {
         $this->value['name'] = $name;
+
         return $this;
     }
 
@@ -53,6 +55,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setValue($value)
     {
         $this->value['value'] = $value;
+
         return $this;
     }
 
@@ -64,6 +67,7 @@ class Node implements \Tree\Node\NodeInterface
     public function setPayloadType($type)
     {
         $this->value['payloadType'] = $type;
+
         return $this;
     }
 
@@ -133,7 +137,7 @@ class Node implements \Tree\Node\NodeInterface
     }
 
     /**
-     * Strip data out of this node to make a list payload (no name or type required)
+     * Strip data out of this node to make a list payload (no name or type required).
      */
     public function makeListPayload()
     {
@@ -146,5 +150,32 @@ class Node implements \Tree\Node\NodeInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Find a child tag by name.
+     *
+     * @param string $name
+     *
+     * @return bool|\Nbt\Node
+     */
+    public function findChildByName($name)
+    {
+        if ($this->getName() == $name) {
+            return $this;
+        }
+
+        // A list of Compound tags has no data associated with it...
+        // so just check for children.
+        if (!$this->isLeaf()) {
+            foreach ($this->getChildren() as $childNode) {
+                $node = $childNode->findChildByName($name);
+                if ($node) {
+                    return $node;
+                }
+            }
+        }
+
+        return false;
     }
 }
