@@ -23,7 +23,7 @@ The library can be pulled in using composer; add the following to your composer.
         }
     ],
     "require": {
-        "rickselby/PHP-NBT-Decoder-Encoder": "~3.0"
+        "rickselby/PHP-NBT-Decoder-Encoder": "~3.1"
     }
 }
 ```
