@@ -64,8 +64,12 @@ $node->setValue(123456);
 
 To create new nodes:
 ```php
+// This is pretty useless on it's own really
+$node = \Nbt\Tag::tagByte('aByte', 0x0f);
+
+// You'll be building trees with Compounds and Lists mostly; both take an array of nodes as their values
 $tree = \Nbt\Tag::tagCompound('SomeTag', [
-    \Nbt\Tag::tagByte('aByte', $yRef),
+    \Nbt\Tag::tagByte('aByte', 0x0f),
     \Nbt\Tag::tagInt('aNumber', 12345),
 ]);
 ```
