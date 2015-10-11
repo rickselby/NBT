@@ -27,19 +27,6 @@ class Service
     /** @var bool Enable verbose output or not **/
     public $verbose = false;
 
-    const TAG_END = 0;
-    const TAG_BYTE = 1;
-    const TAG_SHORT = 2;
-    const TAG_INT = 3;
-    const TAG_LONG = 4;
-    const TAG_FLOAT = 5;
-    const TAG_DOUBLE = 6;
-    const TAG_BYTE_ARRAY = 7;
-    const TAG_STRING = 8;
-    const TAG_LIST = 9;
-    const TAG_COMPOUND = 10;
-    const TAG_INT_ARRAY = 11;
-
     /**
      * Load a file and read the NBT data from the file.
      *
@@ -170,10 +157,10 @@ class Service
         }
         // Read type byte
         $tagType = $this->getTAGByte($fPtr);
-        if ($tagType == self::TAG_END) {
+        if ($tagType == Tag::TAG_END) {
             return false;
         } else {
-            $node->setKey('type', $tagType);
+            $node->setType($tagType);
             if ($this->verbose) {
                 $position = ftell($fPtr);
             }
@@ -181,7 +168,7 @@ class Service
             if ($this->verbose) {
                 trigger_error("Reading tag \"{$tagName}\" at offset {$position}.", E_USER_NOTICE);
             }
-            $node->setKey('name', $tagName);
+            $node->setName($tagName);
             $this->readType($fPtr, $tagType, $node);
 
             return true;
@@ -201,14 +188,14 @@ class Service
         if ($this->verbose) {
             $position = ftell($fPtr);
             trigger_error(
-                "Writing tag \"{$node->getKey('name')}\" of type {$node->getKey('type')} at offset {$position}.",
+                "Writing tag \"{$node->getName()}\" of type {$node->getType()} at offset {$position}.",
                 E_USER_NOTICE
             );
         }
 
-        return $this->putTAGByte($fPtr, $node->getKey('type'))
-            && $this->putTAGString($fPtr, $node->getKey('name'))
-            && $this->writeType($fPtr, $node->getKey('type'), $node);
+        return $this->putTAGByte($fPtr, $node->getType())
+            && $this->putTAGString($fPtr, $node->getName())
+            && $this->writeType($fPtr, $node->getType(), $node);
     }
 
     /**
@@ -223,16 +210,16 @@ class Service
     private function readType($fPtr, $tagType, $node = null)
     {
         switch ($tagType) {
-            case self::TAG_BYTE: // Signed byte (8 bit)
-                $node->setKey('value', $this->getTAGByte($fPtr));
+            case Tag::TAG_BYTE: // Signed byte (8 bit)
+                $node->setValue($this->getTAGByte($fPtr));
                 break;
-            case self::TAG_SHORT: // Signed short (16 bit, big endian)
-                $node->setKey('value', $this->getTAGShort($fPtr));
+            case Tag::TAG_SHORT: // Signed short (16 bit, big endian)
+                $node->setValue($this->getTAGShort($fPtr));
                 break;
-            case self::TAG_INT: // Signed integer (32 bit, big endian)
-                $node->setKey('value', $this->getTAGInt($fPtr));
+            case Tag::TAG_INT: // Signed integer (32 bit, big endian)
+                $node->setValue($this->getTAGInt($fPtr));
                 break;
-            case self::TAG_LONG: // Signed long (64 bit, big endian)
+            case Tag::TAG_LONG: // Signed long (64 bit, big endian)
                 list(, $firstHalf, $secondHalf) = unpack('N*', fread($fPtr, 8));
                 if (PHP_INT_SIZE >= 8) {
                     // Workaround for PHP bug #47564 in 64-bit PHP<=5.2.9
@@ -262,29 +249,29 @@ class Service
                     }
                     $value = gmp_strval($value);
                 }
-                $node->setKey('value', $value);
+                $node->setValue($value);
                 break;
-            case self::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
+            case Tag::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('f', fread($fPtr, 4))
                     : unpack('f', strrev(fread($fPtr, 4)));
-                $node->setKey('value', $value);
+                $node->setValue($value);
                 break;
-            case self::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
+            case Tag::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
                 list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? unpack('d', fread($fPtr, 8))
                     : unpack('d', strrev(fread($fPtr, 8)));
-                $node->setKey('value', $value);
+                $node->setValue($value);
                 break;
-            case self::TAG_BYTE_ARRAY: // Byte array
+            case Tag::TAG_BYTE_ARRAY: // Byte array
                 $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('c*', fread($fPtr, $arrayLength)));
-                $node->setKey('value', $array);
+                $node->setValue($array);
                 break;
-            case self::TAG_STRING: // String
-                $node->setKey('value', $this->getTAGString($fPtr));
+            case Tag::TAG_STRING: // String
+                $node->setValue($this->getTAGString($fPtr));
                 break;
-            case self::TAG_LIST: // List
+            case Tag::TAG_LIST: // List
                 $tagID = $this->getTAGByte($fPtr);
                 $listLength = $this->getTAGInt($fPtr);
                 if ($this->verbose) {
@@ -292,7 +279,7 @@ class Service
                 }
 
                 // Add a reference to the payload type
-                $node->setKey('payloadType', $tagID);
+                $node->setPayloadType($tagID);
 
                 for ($i = 0; $i < $listLength; ++$i) {
                     if (feof($fPtr)) {
@@ -303,7 +290,7 @@ class Service
                     $node->addChild($listNode);
                 }
                 break;
-            case self::TAG_COMPOUND: // Compound
+            case Tag::TAG_COMPOUND: // Compound
                 // Uck. Don't know a better way to do this,
                 $compoundNode = new Node();
                 while ($this->traverseTag($fPtr, $compoundNode)) {
@@ -312,10 +299,10 @@ class Service
                     $compoundNode = new Node();
                 }
                 break;
-            case self::TAG_INT_ARRAY:
+            case Tag::TAG_INT_ARRAY:
                 $arrayLength = $this->getTAGInt($fPtr);
                 $array = array_values(unpack('N*', fread($fPtr, $arrayLength * 4)));
-                $node->setKey('value', $array);
+                $node->setValue($array);
                 break;
         }
     }
@@ -407,14 +394,14 @@ class Service
     private function writeType($fPtr, $tagType, $node)
     {
         switch ($tagType) {
-            case self::TAG_BYTE: // Signed byte (8 bit)
-                return $this->putTAGByte($fPtr, $node->getKey('value'));
-            case self::TAG_SHORT: // Signed short (16 bit, big endian)
-                return $this->putTAGShort($fPtr, $node->getKey('value'));
-            case self::TAG_INT: // Signed integer (32 bit, big endian)
-                return $this->putTAGInt($fPtr, $node->getKey('value'));
-            case self::TAG_LONG: // Signed long (64 bit, big endian)
-                $value = $node->getKey('value');
+            case Tag::TAG_BYTE: // Signed byte (8 bit)
+                return $this->putTAGByte($fPtr, $node->getValue());
+            case Tag::TAG_SHORT: // Signed short (16 bit, big endian)
+                return $this->putTAGShort($fPtr, $node->getValue());
+            case Tag::TAG_INT: // Signed integer (32 bit, big endian)
+                return $this->putTAGInt($fPtr, $node->getValue());
+            case Tag::TAG_LONG: // Signed long (64 bit, big endian)
+                $value = $node->getValue();
                 if (PHP_INT_SIZE >= 8) {
                     $firstHalf = ($value & 0xFFFFFFFF00000000) >> 32;
                     $secondHalf = $value & 0xFFFFFFFF;
@@ -448,20 +435,20 @@ class Service
                 }
 
                 return $wResult;
-            case self::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
-                $value = $node->getKey('value');
+            case Tag::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
+                $value = $node->getValue();
 
                 return is_int(fwrite($fPtr, (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? pack('f', $value)
                     : strrev(pack('f', $value))));
-            case self::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
-                $value = $node->getKey('value');
+            case Tag::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
+                $value = $node->getValue();
 
                 return is_int(fwrite($fPtr, (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                     ? pack('d', $value)
                     : strrev(pack('d', $value))));
-            case self::TAG_BYTE_ARRAY: // Byte array
-                $value = $node->getKey('value');
+            case Tag::TAG_BYTE_ARRAY: // Byte array
+                $value = $node->getValue();
 
                 return $this->putTAGInt($fPtr, count($value))
                     && is_int(fwrite(
@@ -471,40 +458,40 @@ class Service
                             array_merge(['c'.count($value)], $value)
                         )
                     ));
-            case self::TAG_STRING: // String
-                return $this->putTAGString($fPtr, $node->getKey('value'));
-            case self::TAG_LIST: // List
+            case Tag::TAG_STRING: // String
+                return $this->putTAGString($fPtr, $node->getValue());
+            case Tag::TAG_LIST: // List
                 if ($this->verbose) {
                     trigger_error(
-                        'Writing list of '.count($node->getChildren())." tags of type {$node->getKey('payloadType')}.",
+                        'Writing list of '.count($node->getChildren())." tags of type {$node->getPayloadType()}.",
                         E_USER_NOTICE
                     );
                 }
-                if (!($this->putTAGByte($fPtr, $node->getKey('payloadType'))
+                if (!($this->putTAGByte($fPtr, $node->getPayloadType())
                     && $this->putTAGInt($fPtr, count($node->getChildren()))
                     )) {
                     return false;
                 }
                 foreach ($node->getChildren() as $childNode) {
-                    if (!$this->writeType($fPtr, $node->getKey('payloadType'), $childNode)) {
+                    if (!$this->writeType($fPtr, $node->getPayloadType(), $childNode)) {
                         return false;
                     }
                 }
 
                 return true;
-            case self::TAG_COMPOUND: // Compound
+            case Tag::TAG_COMPOUND: // Compound
                 foreach ($node->getChildren() as $childNode) {
                     if (!$this->writeTag($fPtr, $childNode)) {
                         return false;
                     }
                 }
-                if (!$this->writeType($fPtr, self::TAG_END, null)) {
+                if (!$this->writeType($fPtr, Tag::TAG_END, null)) {
                     return false;
                 }
 
                 return true;
-            case self::TAG_INT_ARRAY: // Byte array
-                $value = $node->getKey('value');
+            case Tag::TAG_INT_ARRAY: // Byte array
+                $value = $node->getValue();
 
                 return $this->putTAGInt($fPtr, count($value))
                     && is_int(fwrite(
@@ -514,7 +501,7 @@ class Service
                             array_merge(['N'.count($value)], $value)
                         )
                     ));
-            case self::TAG_END: // End tag
+            case Tag::TAG_END: // End tag
                 return is_int(fwrite($fPtr, "\0"));
         }
     }
