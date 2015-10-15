@@ -1,9 +1,9 @@
 {
-    "name": "rickselby/php-nbt-decoder-encoder",
+    "name": "rickselby/nbt",
     "type": "library",
-    "description": "A PHP-based NBT format decoder and encoder, for the Minecraft NBT format.",
+    "description": "Parser/Writer for the NBT file format",
     "keywords": ["NBT", "decode", "encode", "binary"],
-    "homepage": "https://github.com/rickselby/PHP-NBT-Decoder-Encoder",
+    "homepage": "https://github.com/rickselby/NBT",
     "license": "GNU",
     "authors": [
         {
