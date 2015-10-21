@@ -127,7 +127,7 @@ class DataHandler
             $secondHalf &= 0xFFFFFFFF;
 
             $value = ($firstHalf << 32) | $secondHalf;
-            if ($value > pow(2, 63)) {
+            if ($value >= pow(2, 63)) {
                 $value -= pow(2, 64);
             }
         } else {
