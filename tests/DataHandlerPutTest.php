@@ -7,30 +7,39 @@ use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
 use \org\bovigo\vfs\content\StringBasedFileContent;
 
-class DataHandlerTest extends \PHPUnit_Framework_TestCase
+class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
 {
     private $vRoot;
     private $vFile;
+    private $fPtr;
 
     public function setUp()
     {
         $this->vRoot = vfsStream::setup();
         $this->vFile = new vfsStreamFile('sample.nbt');
         $this->vRoot->addChild($this->vFile);
+        $this->fPtr = fopen($this->vFile->url(), 'wb');
+    }
+
+    public function tearDown()
+    {
+        fclose($this->fPtr);
     }
 
     /**
-     * @dataProvider providerTestGetTAGByte
+     * @dataProvider providerTestPutTAGByte
      */
-    public function testGetTAGByte($value)
+    public function testPutTAGByte($value)
     {
-        $fPtr = $this->setContentAndOpen(pack('c', $value));
-        $byte = DataHandler::getTAGByte($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $byte);
+        DataHandler::putTAGByte($this->fPtr, $value);
+
+        $this->assertSame(
+            pack('c', $value),
+            $this->vFile->getContent()
+        );
     }
 
-    public function providerTestGetTAGByte()
+    public function providerTestPutTAGByte()
     {
         return [
             'smallest' => [-128],
@@ -42,33 +51,37 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGString
+     * @dataProvider providerTestPutTAGString
      */
-    public function testGetTAGString($value)
+    public function testPutTAGString($value)
     {
-        $fPtr = $this->setContentAndOpen(pack('n', strlen($value)).utf8_encode($value));
-        $string = DataHandler::getTAGString($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
+        DataHandler::putTAGString($this->fPtr, $value);
+
+        $this->assertSame(
+            pack('n', strlen($value)).utf8_encode($value),
+            $this->vFile->getContent()
+        );
     }
 
-    public function providerTestGetTAGString()
+    public function providerTestPutTAGString()
     {
         return [['z'], ['words!'], ['averylongexampleimnotsurehowlongtheycanbe']];
     }
 
     /**
-     * @dataProvider providerTestGetTAGShort
+     * @dataProvider providerTestPutTAGShort
      */
-    public function testGetTAGShort($value)
+    public function testPutTAGShort($value)
     {
-        $fPtr = $this->setContentAndOpen(pack('n', $value));
-        $string = DataHandler::getTAGShort($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
+        DataHandler::putTAGShort($this->fPtr, $value);
+
+        $this->assertSame(
+            pack('n', $value),
+            $this->vFile->getContent()
+        );
     }
 
-    public function providerTestGetTAGShort()
+    public function providerTestPutTAGShort()
     {
         return [
             'smallest' => [-32767],
@@ -80,17 +93,19 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGInt
+     * @dataProvider providerTestPutTAGInt
      */
-    public function testGetTAGInt($value)
+    public function testPutTAGInt($value)
     {
-        $fPtr = $this->setContentAndOpen(pack('N', $value));
-        $string = DataHandler::getTAGInt($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
+        DataHandler::putTAGInt($this->fPtr, $value);
+
+        $this->assertSame(
+            pack('N', $value),
+            $this->vFile->getContent()
+        );
     }
 
-    public function providerTestGetTAGInt()
+    public function providerTestPutTAGInt()
     {
         return [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -103,9 +118,9 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGLong
+     * @dataProvider providerTestPutTAGLong
      */
-    public function testGetTAGLong($value)
+    public function testPutTAGLong($value)
     {
         if (PHP_INT_SIZE >= 8) {
             $firstHalf = ($value & 0xFFFFFFFF00000000) >> 32;
@@ -131,13 +146,15 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
             return;
         }
 
-        $fPtr = $this->setContentAndOpen($binary);
-        $string = DataHandler::getTAGLong($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
+        DataHandler::putTAGLong($this->fPtr, $value);
+
+        $this->assertSame(
+            $binary,
+            $this->vFile->getContent()
+        );
     }
 
-    public function providerTestGetTAGLong()
+    public function providerTestPutTAGLong()
     {
         // Values are stated as strings, then convert to ints if it's a 64 bit
         // machine, or passed through gmp_strval() (probably not necessary, actually)
@@ -165,21 +182,21 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGFloat
+     * @dataProvider providerTestPutTAGFloat
      */
-    public function testGetTAGFloat($value)
+    public function testPutTAGFloat($value)
     {
-        $fPtr = $this->setContentAndOpen(
+        DataHandler::putTAGFloat($this->fPtr, $value);
+
+        $this->assertSame(
             (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                 ? pack('f', $value)
-                : strrev(pack('f', $value))
+                : strrev(pack('f', $value)),
+            $this->vFile->getContent()
         );
-        $string = DataHandler::getTAGFloat($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGFloat()
+    public function providerTestPutTAGFloat()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -200,21 +217,21 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * @dataProvider providerTestGetTAGDouble
+     * @dataProvider providerTestPutTAGDouble
      */
-    public function testGetTAGDouble($value)
+    public function testPutTAGDouble($value)
     {
-        $fPtr = $this->setContentAndOpen(
+        DataHandler::putTAGDouble($this->fPtr, $value);
+
+        $this->assertSame(
             (pack('d', 1) == "\77\360\0\0\0\0\0\0")
                 ? pack('d', $value)
-                : strrev(pack('d', $value))
+                : strrev(pack('d', $value)),
+            $this->vFile->getContent()
         );
-        $string = DataHandler::getTAGDouble($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGDouble()
+    public function providerTestPutTAGDouble()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -229,24 +246,23 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGByteArray
+     * @dataProvider providerTestPutTAGByteArray
      */
-    public function testGetTAGByteArray($value)
+    public function testPutTAGByteArray($value)
     {
-        var_dump($value);
-        $fPtr = $this->setContentAndOpen(
+        DataHandler::putTAGByteArray($this->fPtr, $value);
+
+        $this->assertSame(
             pack('N', count($value))
             .call_user_func_array(
                 'pack',
                 array_merge(['c'.count($value)], $value)
-            )
+            ),
+            $this->vFile->getContent()
         );
-        $byte = DataHandler::getTAGByteArray($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $byte);
     }
 
-    public function providerTestGetTAGByteArray()
+    public function providerTestPutTAGByteArray()
     {
         return [
             'small values' => [[-128, -127, -126]],
@@ -257,12 +273,34 @@ class DataHandlerTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    private function setContentAndOpen($binary)
+    /**
+     * @dataProvider providerTestPutTAGIntArray
+     */
+    public function testPutTAGIntArray($value)
     {
-        $content = new StringBasedFileContent($binary);
-        $this->vFile->setContent($content);
-        return fopen($this->vFile->url(), 'rb');
+        DataHandler::putTAGIntArray($this->fPtr, $value);
+
+        $this->assertSame(
+            pack('N', count($value))
+            .call_user_func_array(
+                'pack',
+                array_merge(['N'.count($value)], $value)
+            ),
+            $this->vFile->getContent()
+        );
     }
+
+    public function providerTestPutTAGIntArray()
+    {
+        return [
+            'small values' => [[pow(-2,31), -2147483647, -2147483646]],
+            'large values' => [[2147483645, 2147483646, 2147483647]],
+            'zeros' => [[0,0,0]],
+            'single' => [[158976]],
+            'longarray' => [array_fill(0, 255, -686842)],
+        ];
+    }
+
 }
 
 
