@@ -5,7 +5,6 @@ namespace Nbt\Tests;
 use Nbt\DataHandler;
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
-use \org\bovigo\vfs\content\StringBasedFileContent;
 
 class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
 {
