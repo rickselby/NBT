@@ -20,26 +20,37 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * dataProvider providerFiles
-     *
+     * @dataProvider providerRawFiles
+     */
     public function testWriteFile($file, $tree)
     {
-        $this->service->writeFile($this->vFile->url(), $tree);
+        $this->service->writeFile($this->vFile->url(), $tree, '');
 
         $this->assertFileEquals($file, $this->vFile->url());
     }
-     */
 
     /**
-     * @dataProvider providerFiles
+     * @dataProvider providerRawFiles
      */
     public function testReadString($file, $tree)
     {
-        $string = file_get_contents('compress.zlib://'.$file);
+        $string = file_get_contents($file);
 
         $fileTree = $this->service->readString($string);
 
         $this->assertEquals($tree, $fileTree);
+    }
+
+    /**
+     * @dataProvider providerRawFiles
+     */
+    public function testWriteString($file, $tree)
+    {
+        $data = $this->service->writeString($tree);
+
+        $string = file_get_contents($file);
+
+        $this->assertEquals($string, $data);
     }
 
     /**************************************************************************/
@@ -58,6 +69,15 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
             ['tests/Data/smalltest.nbt', $this->smallTree()],
             ['tests/Data/bigtest.nbt', $this->bigTree()],
             ['tests/Data/hugetest.nbt', $this->hugeTree()],
+        ];
+    }
+
+    public function providerRawFiles()
+    {
+        return [
+            ['tests/Data/smalltest.raw.nbt', $this->smallTree()],
+            ['tests/Data/bigtest.raw.nbt', $this->bigTree()],
+            ['tests/Data/hugetest.raw.nbt', $this->hugeTree()],
         ];
     }
 
@@ -89,7 +109,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_LONG)
                     ->setName('longTest')
-                    ->setValue(9223372036854775807),
+                    ->setValue((PHP_INT_SIZE < 8) ? '9223372036854775807' : 9223372036854775807),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_SHORT)
                     ->setName('shortTest')
@@ -167,7 +187,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                                 (new \Nbt\Node())
                                     ->setType(\Nbt\Tag::TAG_LONG)
                                     ->setName('created-on')
-                                    ->setValue(1264099775885),
+                                    ->setValue((PHP_INT_SIZE < 8) ? '1264099775885' : 1264099775885),
                             ]),
                         (new \Nbt\Node())
                             ->setChildren([
@@ -178,7 +198,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                                 (new \Nbt\Node())
                                     ->setType(\Nbt\Tag::TAG_LONG)
                                     ->setName('created-on')
-                                    ->setValue(1264099775885),
+                                    ->setValue((PHP_INT_SIZE < 8) ? '1264099775885' : 1264099775885),
                             ]),
                     ]),
                 (new \Nbt\Node())
@@ -192,7 +212,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_DOUBLE)
                     ->setName('doubleTest')
-                    ->setValue(0.49312871321823),
+                    ->setValue(0.4931287132182315),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_INT_ARRAY)
                     ->setName('New Int Array')
@@ -281,19 +301,19 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                         (new \Nbt\Node())
                             ->setType(\Nbt\Tag::TAG_LONG)
                             ->setName('0')
-                            ->setValue(0),
+                            ->setValue((PHP_INT_SIZE < 8) ? '0' : 0),
                         (new \Nbt\Node())
                             ->setType(\Nbt\Tag::TAG_LONG)
                             ->setName('1')
-                            ->setValue(9223372036854775807),
+                            ->setValue((PHP_INT_SIZE < 8) ? '9223372036854775807' : 9223372036854775807),
                         (new \Nbt\Node())
                             ->setType(\Nbt\Tag::TAG_LONG)
                             ->setName('2')
-                            ->setValue(-9223372036854775808),
+                            ->setValue((PHP_INT_SIZE < 8) ? '-9223372036854775808' : -9223372036854775808),
                         (new \Nbt\Node())
                             ->setType(\Nbt\Tag::TAG_LONG)
                             ->setName('3')
-                            ->setValue(-1),
+                            ->setValue((PHP_INT_SIZE < 8) ? '-1' : -1),
                     ]),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_COMPOUND)

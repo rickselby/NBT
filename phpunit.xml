@@ -3,10 +3,6 @@
     <filter>
         <whitelist>
             <directory suffix=".php">./src</directory>
-            <exclude>
-                <directory>./vendor</directory>
-                <directory>./tests</directory>
-            </exclude>
         </whitelist>
     </filter>
     <testsuites>
@@ -14,4 +10,7 @@
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
+    <logging>
+        <log type="coverage-html" target="./coverage" />
+    </logging>
 </phpunit>
