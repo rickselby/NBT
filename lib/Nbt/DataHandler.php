@@ -127,9 +127,9 @@ class DataHandler
             $secondHalf &= 0xFFFFFFFF;
 
             $value = ($firstHalf << 32) | $secondHalf;
-            if ($value >= pow(2, 63)) {
-                $value -= pow(2, 64);
-            }
+
+            $value =  self::unsignedToSigned($value, 64);
+
         } else {
             if (!extension_loaded('gmp')) {
                 trigger_error(
@@ -315,7 +315,12 @@ class DataHandler
     {
         $arrayLength = self::getTAGInt($fPtr);
 
-        return array_values(unpack('N*', fread($fPtr, $arrayLength * 4)));
+        $values = [];
+        for($i = 0; $i < $arrayLength; $i++) {
+            $values[] = self::getTAGInt($fPtr);
+        }
+
+        return $values;
     }
 
     /**
@@ -348,8 +353,8 @@ class DataHandler
      */
     private static function unsignedToSigned($value, $size)
     {
-        if ($value >= pow(2, $size - 1)) {
-            $value -= pow(2, $size);
+        if ($value >= (int) pow(2, $size - 1)) {
+            $value -= (int) pow(2, $size);
         }
 
         return $value;
@@ -366,7 +371,7 @@ class DataHandler
     private static function signedToUnsigned($value, $size)
     {
         if ($value < 0) {
-            $value += pow(2, $size);
+            $value += (int) pow(2, $size);
         }
 
         return $value;
