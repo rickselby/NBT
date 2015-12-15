@@ -128,8 +128,7 @@ class DataHandler
 
             $value = ($firstHalf << 32) | $secondHalf;
 
-            $value =  self::unsignedToSigned($value, 64);
-
+            $value = self::unsignedToSigned($value, 64);
         } else {
             if (!extension_loaded('gmp')) {
                 trigger_error(
@@ -316,7 +315,7 @@ class DataHandler
         $arrayLength = self::getTAGInt($fPtr);
 
         $values = [];
-        for($i = 0; $i < $arrayLength; $i++) {
+        for ($i = 0; $i < $arrayLength; ++$i) {
             $values[] = self::getTAGInt($fPtr);
         }
 

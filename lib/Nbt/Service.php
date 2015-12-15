@@ -8,24 +8,27 @@
  */
 namespace Nbt;
 
-if (PHP_INT_SIZE < 8) {
-    /*
-     *  GMP isn't required for 64-bit machines as we're handling signed ints. We can use native math instead.
-     *  We still need to use GMP for 32-bit builds of PHP though.
-     */
-    if (!extension_loaded('gmp')) {
-        trigger_error(
-            'The NBT class requires the GMP extension for 64-bit number handling on 32-bit PHP builds. '
-            .'Execution will continue, but will halt if a 64-bit number is handled.',
-            E_USER_NOTICE
-        );
-    }
-}
-
 class Service
 {
-    /** @var bool Enable verbose output or not **/
-    public $verbose = false;
+    /**
+     * Ready the class; check if longs will be a problem.
+     */
+    public function __construct()
+    {
+        if (PHP_INT_SIZE < 8) {
+            /*
+             *  GMP isn't required for 64-bit machines as we're handling signed ints. We can use native math instead.
+             *  We still need to use GMP for 32-bit builds of PHP though.
+             */
+            if (!extension_loaded('gmp')) {
+                trigger_error(
+                    'The NBT class requires the GMP extension for 64-bit number handling on 32-bit PHP builds. '
+                    .'Execution will continue, but will halt if a 64-bit number is handled.',
+                    E_USER_NOTICE
+                );
+            }
+        }
+    }
 
     /**
      * Load a file and read the NBT data from the file.
@@ -38,9 +41,6 @@ class Service
     public function loadFile($filename, $wrapper = 'compress.zlib://')
     {
         if (is_file($filename)) {
-            if ($this->verbose) {
-                trigger_error("Loading file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
-            }
             $fPtr = fopen("{$wrapper}{$filename}", 'rb');
 
             return $this->readFilePointer($fPtr);
@@ -62,9 +62,6 @@ class Service
      */
     public function writeFile($filename, $tree, $wrapper = 'compress.zlib://')
     {
-        if ($this->verbose) {
-            trigger_error("Writing file \"{$filename}\" with stream wrapper \"{$wrapper}\".", E_USER_NOTICE);
-        }
         $fPtr = fopen("{$wrapper}{$filename}", 'wb');
         $this->writeFilePointer($fPtr, $tree);
         fclose($fPtr);
@@ -79,16 +76,8 @@ class Service
      */
     public function readFilePointer($fPtr)
     {
-        if ($this->verbose) {
-            trigger_error('Traversing first tag in file.', E_USER_NOTICE);
-        }
-
         $treeRoot = new Node();
         $this->traverseTag($fPtr, $treeRoot);
-
-        if ($this->verbose) {
-            trigger_error('Encountered end tag for first tag; finished.', E_USER_NOTICE);
-        }
 
         return $treeRoot;
     }
@@ -149,10 +138,6 @@ class Service
     private function traverseTag($fPtr, &$node)
     {
         if (feof($fPtr)) {
-            if ($this->verbose) {
-                trigger_error('Reached end of file/resource.', E_USER_NOTICE);
-            }
-
             return false;
         }
         // Read type byte
@@ -161,13 +146,7 @@ class Service
             return false;
         } else {
             $node->setType($tagType);
-            if ($this->verbose) {
-                $position = ftell($fPtr);
-            }
             $tagName = DataHandler::getTAGString($fPtr);
-            if ($this->verbose) {
-                trigger_error("Reading tag \"{$tagName}\" at offset {$position}.", E_USER_NOTICE);
-            }
             $node->setName($tagName);
             $this->readType($fPtr, $tagType, $node);
 
@@ -185,14 +164,6 @@ class Service
      */
     private function writeTag($fPtr, $node)
     {
-        if ($this->verbose) {
-            $position = ftell($fPtr);
-            trigger_error(
-                "Writing tag \"{$node->getName()}\" of type {$node->getType()} at offset {$position}.",
-                E_USER_NOTICE
-            );
-        }
-
         return DataHandler::putTAGByte($fPtr, $node->getType())
             && DataHandler::putTAGString($fPtr, $node->getName())
             && $this->writeType($fPtr, $node->getType(), $node);
@@ -240,9 +211,6 @@ class Service
             case Tag::TAG_LIST: // List
                 $tagID = DataHandler::getTAGByte($fPtr);
                 $listLength = DataHandler::getTAGInt($fPtr);
-                if ($this->verbose) {
-                    trigger_error("Reading in list of {$listLength} tags of type {$tagID}.", E_USER_NOTICE);
-                }
 
                 // Add a reference to the payload type
                 $node->setPayloadType($tagID);
@@ -299,12 +267,6 @@ class Service
             case Tag::TAG_INT_ARRAY: // Byte array
                 return DataHandler::putTAGIntArray($fPtr, $node->getValue());
             case Tag::TAG_LIST: // List
-                if ($this->verbose) {
-                    trigger_error(
-                        'Writing list of '.count($node->getChildren())." tags of type {$node->getPayloadType()}.",
-                        E_USER_NOTICE
-                    );
-                }
                 if (!(DataHandler::putTAGByte($fPtr, $node->getPayloadType())
                     && DataHandler::putTAGInt($fPtr, count($node->getChildren()))
                     )) {
