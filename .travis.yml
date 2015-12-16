@@ -6,7 +6,7 @@ php:
     - 7.0
 
 install:
-    - composer require satooshi/php-coveralls:~0.6@stable
+    - composer install
 
 before_script:
     - mkdir -p build/logs
@@ -15,6 +15,5 @@ script:
     - phpunit --coverage-clover build/logs/clover.xml
 
 after_success:
-    - php vendor/bin/coveralls -v
     - wget https://scrutinizer-ci.com/ocular.phar
     - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
