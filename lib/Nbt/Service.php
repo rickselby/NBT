@@ -10,11 +10,15 @@ namespace Nbt;
 
 class Service
 {
+    private $dataHandler;
+
     /**
      * Ready the class; check if longs will be a problem.
      */
-    public function __construct()
+    public function __construct(DataHandler $dataHandler)
     {
+        $this->dataHandler = $dataHandler;
+
         if (PHP_INT_SIZE < 8) {
             /*
              *  GMP isn't required for 64-bit machines as we're handling signed ints. We can use native math instead.
@@ -77,9 +81,14 @@ class Service
     public function readFilePointer($fPtr)
     {
         $treeRoot = new Node();
-        $this->traverseTag($fPtr, $treeRoot);
 
-        return $treeRoot;
+        $success = $this->traverseTag($fPtr, $treeRoot);
+
+        if ($success) {
+            return $treeRoot;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -92,6 +101,7 @@ class Service
     {
         if (!$this->writeTag($fPtr, $tree)) {
             trigger_error('Failed to write tree to file/resource.', E_USER_WARNING);
+            return false;
         }
     }
 
@@ -141,12 +151,12 @@ class Service
             return false;
         }
         // Read type byte
-        $tagType = DataHandler::getTAGByte($fPtr);
+        $tagType = $this->dataHandler->getTAGByte($fPtr);
         if ($tagType == Tag::TAG_END) {
             return false;
         } else {
             $node->setType($tagType);
-            $tagName = DataHandler::getTAGString($fPtr);
+            $tagName = $this->dataHandler->getTAGString($fPtr);
             $node->setName($tagName);
             $this->readType($fPtr, $tagType, $node);
 
@@ -164,8 +174,8 @@ class Service
      */
     private function writeTag($fPtr, $node)
     {
-        return DataHandler::putTAGByte($fPtr, $node->getType())
-            && DataHandler::putTAGString($fPtr, $node->getName())
+        return $this->dataHandler->putTAGByte($fPtr, $node->getType())
+            && $this->dataHandler->putTAGString($fPtr, $node->getName())
             && $this->writeType($fPtr, $node->getType(), $node);
     }
 
@@ -182,35 +192,35 @@ class Service
     {
         switch ($tagType) {
             case Tag::TAG_BYTE: // Signed byte (8 bit)
-                $node->setValue(DataHandler::getTAGByte($fPtr));
+                $node->setValue($this->dataHandler->getTAGByte($fPtr));
                 break;
             case Tag::TAG_SHORT: // Signed short (16 bit, big endian)
-                $node->setValue(DataHandler::getTAGShort($fPtr));
+                $node->setValue($this->dataHandler->getTAGShort($fPtr));
                 break;
             case Tag::TAG_INT: // Signed integer (32 bit, big endian)
-                $node->setValue(DataHandler::getTAGInt($fPtr));
+                $node->setValue($this->dataHandler->getTAGInt($fPtr));
                 break;
             case Tag::TAG_LONG: // Signed long (64 bit, big endian)
-                $node->setValue(DataHandler::getTAGLong($fPtr));
+                $node->setValue($this->dataHandler->getTAGLong($fPtr));
                 break;
             case Tag::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
-                $node->setValue(DataHandler::getTAGFloat($fPtr));
+                $node->setValue($this->dataHandler->getTAGFloat($fPtr));
                 break;
             case Tag::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
-                $node->setValue(DataHandler::getTAGDouble($fPtr));
+                $node->setValue($this->dataHandler->getTAGDouble($fPtr));
                 break;
             case Tag::TAG_BYTE_ARRAY: // Byte array
-                $node->setValue(DataHandler::getTAGByteArray($fPtr));
+                $node->setValue($this->dataHandler->getTAGByteArray($fPtr));
                 break;
             case Tag::TAG_STRING: // String
-                $node->setValue(DataHandler::getTAGString($fPtr));
+                $node->setValue($this->dataHandler->getTAGString($fPtr));
                 break;
             case Tag::TAG_INT_ARRAY:
-                $node->setValue(DataHandler::getTAGIntArray($fPtr));
+                $node->setValue($this->dataHandler->getTAGIntArray($fPtr));
                 break;
             case Tag::TAG_LIST: // List
-                $tagID = DataHandler::getTAGByte($fPtr);
-                $listLength = DataHandler::getTAGInt($fPtr);
+                $tagID = $this->dataHandler->getTAGByte($fPtr);
+                $listLength = $this->dataHandler->getTAGInt($fPtr);
 
                 // Add a reference to the payload type
                 $node->setPayloadType($tagID);
@@ -249,26 +259,26 @@ class Service
     {
         switch ($tagType) {
             case Tag::TAG_BYTE: // Signed byte (8 bit)
-                return DataHandler::putTAGByte($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGByte($fPtr, $node->getValue());
             case Tag::TAG_SHORT: // Signed short (16 bit, big endian)
-                return DataHandler::putTAGShort($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGShort($fPtr, $node->getValue());
             case Tag::TAG_INT: // Signed integer (32 bit, big endian)
-                return DataHandler::putTAGInt($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGInt($fPtr, $node->getValue());
             case Tag::TAG_LONG: // Signed long (64 bit, big endian)
-                return DataHandler::putTAGLong($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGLong($fPtr, $node->getValue());
             case Tag::TAG_FLOAT: // Floating point value (32 bit, big endian, IEEE 754-2008)
-                return DataHandler::putTAGFloat($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGFloat($fPtr, $node->getValue());
             case Tag::TAG_DOUBLE: // Double value (64 bit, big endian, IEEE 754-2008)
-                return DataHandler::putTAGDouble($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGDouble($fPtr, $node->getValue());
             case Tag::TAG_BYTE_ARRAY: // Byte array
-                return DataHandler::putTAGByteArray($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGByteArray($fPtr, $node->getValue());
             case Tag::TAG_STRING: // String
-                return DataHandler::putTAGString($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGString($fPtr, $node->getValue());
             case Tag::TAG_INT_ARRAY: // Byte array
-                return DataHandler::putTAGIntArray($fPtr, $node->getValue());
+                return $this->dataHandler->putTAGIntArray($fPtr, $node->getValue());
             case Tag::TAG_LIST: // List
-                if (!(DataHandler::putTAGByte($fPtr, $node->getPayloadType())
-                    && DataHandler::putTAGInt($fPtr, count($node->getChildren()))
+                if (!($this->dataHandler->putTAGByte($fPtr, $node->getPayloadType())
+                    && $this->dataHandler->putTAGInt($fPtr, count($node->getChildren()))
                     )) {
                     return false;
                 }

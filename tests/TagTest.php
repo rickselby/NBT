@@ -31,6 +31,15 @@ class TagTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($tag->getType(), $type);
     }
 
+    /**
+     * @dataProvider providerTestTagGetters
+     */
+    public function testTagGetterReturnsCorrectValue($func, $value, $type)
+    {
+        $tag = Tag::$func('TagName', $value);
+        $this->assertEquals($tag->getValue(), $value);
+    }
+
     public function providerTestTagGetters()
     {
         return [

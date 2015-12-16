@@ -11,7 +11,7 @@ class DataHandler
      *
      * @return byte
      */
-    public static function getTAGByte($fPtr)
+    public function getTAGByte($fPtr)
     {
         return unpack('c', fread($fPtr, 1))[1];
     }
@@ -24,7 +24,7 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGByte($fPtr, $byte)
+    public function putTAGByte($fPtr, $byte)
     {
         return is_int(fwrite($fPtr, pack('c', $byte)));
     }
@@ -36,9 +36,9 @@ class DataHandler
      *
      * @return string
      */
-    public static function getTAGString($fPtr)
+    public function getTAGString($fPtr)
     {
-        if (!$stringLength = self::getTAGShort($fPtr)) {
+        if (!$stringLength = $this->getTAGShort($fPtr)) {
             return '';
         }
         // Read in number of bytes specified by string length, and decode from utf8.
@@ -53,11 +53,11 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGString($fPtr, $string)
+    public function putTAGString($fPtr, $string)
     {
         $value = utf8_encode($string);
 
-        return self::putTAGShort($fPtr, strlen($value))
+        return $this->putTAGShort($fPtr, strlen($value))
                 && is_int(fwrite($fPtr, $value));
     }
 
@@ -68,9 +68,9 @@ class DataHandler
      *
      * @return int
      */
-    public static function getTAGShort($fPtr)
+    public function getTAGShort($fPtr)
     {
-        return self::unsignedToSigned(unpack('n', fread($fPtr, 2))[1], 16);
+        return $this->unsignedToSigned(unpack('n', fread($fPtr, 2))[1], 16);
     }
 
     /**
@@ -81,9 +81,9 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGShort($fPtr, $short)
+    public function putTAGShort($fPtr, $short)
     {
-        return is_int(fwrite($fPtr, pack('n', self::signedToUnsigned($short, 16))));
+        return is_int(fwrite($fPtr, pack('n', $this->signedToUnsigned($short, 16))));
     }
 
     /**
@@ -93,9 +93,9 @@ class DataHandler
      *
      * @return int
      */
-    public static function getTAGInt($fPtr)
+    public function getTAGInt($fPtr)
     {
-        return self::unsignedToSigned(unpack('N', fread($fPtr, 4))[1], 32);
+        return $this->unsignedToSigned(unpack('N', fread($fPtr, 4))[1], 32);
     }
 
     /**
@@ -106,9 +106,9 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGInt($fPtr, $int)
+    public function putTAGInt($fPtr, $int)
     {
-        return is_int(fwrite($fPtr, pack('N', self::signedToUnsigned($int, 32))));
+        return is_int(fwrite($fPtr, pack('N', $this->signedToUnsigned($int, 32))));
     }
 
     /**
@@ -118,17 +118,17 @@ class DataHandler
      *
      * @return int
      */
-    public static function getTAGLong($fPtr)
+    public function getTAGLong($fPtr)
     {
         list(, $firstHalf, $secondHalf) = unpack('N*', fread($fPtr, 8));
-        if (PHP_INT_SIZE >= 8) {
+        if ($this->is64bit()) {
             // Workaround for PHP bug #47564 in 64-bit PHP<=5.2.9
             $firstHalf &= 0xFFFFFFFF;
             $secondHalf &= 0xFFFFFFFF;
 
             $value = ($firstHalf << 32) | $secondHalf;
 
-            $value = self::unsignedToSigned($value, 64);
+            $value = $this->unsignedToSigned($value, 64);
         } else {
             if (!extension_loaded('gmp')) {
                 trigger_error(
@@ -160,9 +160,9 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGLong($fPtr, $long)
+    public function putTAGLong($fPtr, $long)
     {
-        if (PHP_INT_SIZE >= 8) {
+        if ($this->is64bit()) {
             $firstHalf = ($long & 0xFFFFFFFF00000000) >> 32;
             $secondHalf = $long & 0xFFFFFFFF;
 
@@ -204,7 +204,7 @@ class DataHandler
      *
      * @return float
      */
-    public static function getTAGFloat($fPtr)
+    public function getTAGFloat($fPtr)
     {
         list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
             ? unpack('f', fread($fPtr, 4))
@@ -221,7 +221,7 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGFloat($fPtr, $float)
+    public function putTAGFloat($fPtr, $float)
     {
         return is_int(
             fwrite(
@@ -240,7 +240,7 @@ class DataHandler
      *
      * @return float
      */
-    public static function getTAGDouble($fPtr)
+    public function getTAGDouble($fPtr)
     {
         list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
             ? unpack('d', fread($fPtr, 8))
@@ -257,7 +257,7 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGDouble($fPtr, $double)
+    public function putTAGDouble($fPtr, $double)
     {
         return is_int(
             fwrite(
@@ -276,9 +276,9 @@ class DataHandler
      *
      * @return byte[]
      */
-    public static function getTAGByteArray($fPtr)
+    public function getTAGByteArray($fPtr)
     {
-        $arrayLength = self::getTAGInt($fPtr);
+        $arrayLength = $this->getTAGInt($fPtr);
 
         return array_values(unpack('c*', fread($fPtr, $arrayLength)));
     }
@@ -291,9 +291,9 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGByteArray($fPtr, $array)
+    public function putTAGByteArray($fPtr, $array)
     {
-        return self::putTAGInt($fPtr, count($array))
+        return $this->putTAGInt($fPtr, count($array))
             && is_int(fwrite(
                 $fPtr,
                 call_user_func_array(
@@ -310,13 +310,13 @@ class DataHandler
      *
      * @return int[]
      */
-    public static function getTAGIntArray($fPtr)
+    public function getTAGIntArray($fPtr)
     {
-        $arrayLength = self::getTAGInt($fPtr);
+        $arrayLength = $this->getTAGInt($fPtr);
 
         $values = [];
         for ($i = 0; $i < $arrayLength; ++$i) {
-            $values[] = self::getTAGInt($fPtr);
+            $values[] = $this->getTAGInt($fPtr);
         }
 
         return $values;
@@ -330,9 +330,9 @@ class DataHandler
      *
      * @return bool
      */
-    public static function putTAGIntArray($fPtr, $array)
+    public function putTAGIntArray($fPtr, $array)
     {
-        return self::putTAGInt($fPtr, count($array))
+        return $this->putTAGInt($fPtr, count($array))
             && is_int(fwrite(
                 $fPtr,
                 call_user_func_array(
@@ -350,7 +350,7 @@ class DataHandler
      *
      * @return int
      */
-    private static function unsignedToSigned($value, $size)
+    private function unsignedToSigned($value, $size)
     {
         if ($value >= (int) pow(2, $size - 1)) {
             $value -= (int) pow(2, $size);
@@ -367,12 +367,22 @@ class DataHandler
      *
      * @return int
      */
-    private static function signedToUnsigned($value, $size)
+    private function signedToUnsigned($value, $size)
     {
         if ($value < 0) {
             $value += (int) pow(2, $size);
         }
 
         return $value;
+    }
+
+    /**
+     * Check if we're on a 64 bit machine
+     *
+     * @return boolean
+     */
+    private function is64bit()
+    {
+        return (PHP_INT_SIZE >= 8);
     }
 }

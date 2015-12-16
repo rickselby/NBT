@@ -11,12 +11,15 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
 {
     private $vRoot;
     private $vFile;
+    public $dataHandler;
 
     public function setUp()
     {
         $this->vRoot = vfsStream::setup();
         $this->vFile = new vfsStreamFile('sample.nbt');
         $this->vRoot->addChild($this->vFile);
+
+        $this->dataHandler = new DataHandler();
     }
 
     /**
@@ -25,7 +28,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
     public function testGetTAGByte($value)
     {
         $fPtr = $this->setContentAndOpen(pack('c', $value));
-        $byte = DataHandler::getTAGByte($fPtr);
+        $byte = $this->dataHandler->getTAGByte($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $byte);
     }
@@ -47,14 +50,14 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
     public function testGetTAGString($value)
     {
         $fPtr = $this->setContentAndOpen(pack('n', strlen($value)).utf8_encode($value));
-        $string = DataHandler::getTAGString($fPtr);
+        $string = $this->dataHandler->getTAGString($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $string);
     }
 
     public function providerTestGetTAGString()
     {
-        return [['z'], ['words!'], ['averylongexampleimnotsurehowlongtheycanbe']];
+        return [['z'], ['words!'], ['averylongexampleimnotsurehowlongtheycanbe'], ['']];
     }
 
     /**
@@ -63,7 +66,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
     public function testGetTAGShort($value)
     {
         $fPtr = $this->setContentAndOpen(pack('n', $value));
-        $string = DataHandler::getTAGShort($fPtr);
+        $string = $this->dataHandler->getTAGShort($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $string);
     }
@@ -85,7 +88,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
     public function testGetTAGInt($value)
     {
         $fPtr = $this->setContentAndOpen(pack('N', $value));
-        $string = DataHandler::getTAGInt($fPtr);
+        $string = $this->dataHandler->getTAGInt($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $string);
     }
@@ -103,68 +106,6 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestGetTAGLong
-     */
-    public function testGetTAGLong($value)
-    {
-        if (PHP_INT_SIZE >= 8) {
-            $firstHalf = ($value & 0xFFFFFFFF00000000) >> 32;
-            $secondHalf = $value & 0xFFFFFFFF;
-
-            $binary = pack('NN', $firstHalf, $secondHalf);
-        } elseif (extension_loaded('gmp')) {
-            // 32-bit longs seem to be too long for pack() on 32-bit machines. Split into 4x16-bit instead.
-            $quarters[0] = gmp_div(gmp_and($value, '0xFFFF000000000000'), gmp_pow(2, 48));
-            $quarters[1] = gmp_div(gmp_and($value, '0x0000FFFF00000000'), gmp_pow(2, 32));
-            $quarters[2] = gmp_div(gmp_and($value, '0x00000000FFFF0000'), gmp_pow(2, 16));
-            $quarters[3] = gmp_and($value, '0xFFFF');
-
-            $binary = pack(
-                'nnnn',
-                gmp_intval($quarters[0]),
-                gmp_intval($quarters[1]),
-                gmp_intval($quarters[2]),
-                gmp_intval($quarters[3])
-            );
-        } else {
-            // no way of testing 64-bit numbers here. do nothing.
-            return;
-        }
-
-        $fPtr = $this->setContentAndOpen($binary);
-        $string = DataHandler::getTAGLong($fPtr);
-        fclose($fPtr);
-        $this->assertSame($value, $string);
-    }
-
-    public function providerTestGetTAGLong()
-    {
-        // Values are stated as strings, then convert to ints if it's a 64 bit
-        // machine, or passed through gmp_strval() (probably not necessary, actually)
-        // if a 32 bit machine
-        $values = [
-                'smallest' => ['-9223372036854775808'],
-                'negative' => ['-23456789012345'],
-                'zero' => ['0'],
-                'positive' => ['12345678901234'],
-                'largest' => ['9223372036854775807'],
-            ];
-
-        if (PHP_INT_SIZE >= 8) {
-            array_walk($values, function(&$value) {
-                $value = [intval($value[0])];
-            });
-        } elseif (extension_loaded('gmp')) {
-            array_walk($values, function(&$value) {
-                $value = [gmp_strval(gmp_init($value[0]))];
-            });
-        } else {
-            $values = [[0]];
-        }
-        return $values;
-    }
-
-    /**
      * @dataProvider providerTestGetTAGFloat
      */
     public function testGetTAGFloat($value)
@@ -174,7 +115,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
                 ? pack('f', $value)
                 : strrev(pack('f', $value))
         );
-        $string = DataHandler::getTAGFloat($fPtr);
+        $string = $this->dataHandler->getTAGFloat($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $string);
     }
@@ -209,7 +150,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
                 ? pack('d', $value)
                 : strrev(pack('d', $value))
         );
-        $string = DataHandler::getTAGDouble($fPtr);
+        $string = $this->dataHandler->getTAGDouble($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $string);
     }
@@ -240,7 +181,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
                 array_merge(['c'.count($value)], $value)
             )
         );
-        $byte = DataHandler::getTAGByteArray($fPtr);
+        $byte = $this->dataHandler->getTAGByteArray($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $byte);
     }
@@ -268,7 +209,7 @@ class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
                 array_merge(['N'.count($value)], $value)
             )
         );
-        $int = DataHandler::getTAGIntArray($fPtr);
+        $int = $this->dataHandler->getTAGIntArray($fPtr);
         fclose($fPtr);
         $this->assertSame($value, $int);
     }

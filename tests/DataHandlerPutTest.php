@@ -11,6 +11,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
     private $vRoot;
     private $vFile;
     private $fPtr;
+    public $dataHandler;
 
     public function setUp()
     {
@@ -18,6 +19,8 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
         $this->vFile = new vfsStreamFile('sample.nbt');
         $this->vRoot->addChild($this->vFile);
         $this->fPtr = fopen($this->vFile->url(), 'wb');
+
+        $this->dataHandler = new DataHandler();
     }
 
     public function tearDown()
@@ -30,7 +33,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGByte($value)
     {
-        DataHandler::putTAGByte($this->fPtr, $value);
+        $this->dataHandler->putTAGByte($this->fPtr, $value);
 
         $this->assertSame(
             pack('c', $value),
@@ -54,7 +57,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGString($value)
     {
-        DataHandler::putTAGString($this->fPtr, $value);
+        $this->dataHandler->putTAGString($this->fPtr, $value);
 
         $this->assertSame(
             pack('n', strlen($value)).utf8_encode($value),
@@ -72,7 +75,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGShort($value)
     {
-        DataHandler::putTAGShort($this->fPtr, $value);
+        $this->dataHandler->putTAGShort($this->fPtr, $value);
 
         $this->assertSame(
             pack('n', $value),
@@ -96,7 +99,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGInt($value)
     {
-        DataHandler::putTAGInt($this->fPtr, $value);
+        $this->dataHandler->putTAGInt($this->fPtr, $value);
 
         $this->assertSame(
             pack('N', $value),
@@ -117,75 +120,11 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider providerTestPutTAGLong
-     */
-    public function testPutTAGLong($value)
-    {
-        if (PHP_INT_SIZE >= 8) {
-            $firstHalf = ($value & 0xFFFFFFFF00000000) >> 32;
-            $secondHalf = $value & 0xFFFFFFFF;
-
-            $binary = pack('NN', $firstHalf, $secondHalf);
-        } elseif (extension_loaded('gmp')) {
-            // 32-bit longs seem to be too long for pack() on 32-bit machines. Split into 4x16-bit instead.
-            $quarters[0] = gmp_div(gmp_and($value, '0xFFFF000000000000'), gmp_pow(2, 48));
-            $quarters[1] = gmp_div(gmp_and($value, '0x0000FFFF00000000'), gmp_pow(2, 32));
-            $quarters[2] = gmp_div(gmp_and($value, '0x00000000FFFF0000'), gmp_pow(2, 16));
-            $quarters[3] = gmp_and($value, '0xFFFF');
-
-            $binary = pack(
-                'nnnn',
-                gmp_intval($quarters[0]),
-                gmp_intval($quarters[1]),
-                gmp_intval($quarters[2]),
-                gmp_intval($quarters[3])
-            );
-        } else {
-            // no way of testing 64-bit numbers here. do nothing.
-            return;
-        }
-
-        DataHandler::putTAGLong($this->fPtr, $value);
-
-        $this->assertSame(
-            $binary,
-            $this->vFile->getContent()
-        );
-    }
-
-    public function providerTestPutTAGLong()
-    {
-        // Values are stated as strings, then convert to ints if it's a 64 bit
-        // machine, or passed through gmp_strval() (probably not necessary, actually)
-        // if a 32 bit machine
-        $values = [
-                'smallest' => ['-9223372036854775808'],
-                'negative' => ['-23456789012345'],
-                'zero' => ['0'],
-                'positive' => ['12345678901234'],
-                'largest' => ['9223372036854775807'],
-            ];
-
-        if (PHP_INT_SIZE >= 8) {
-            array_walk($values, function(&$value) {
-                $value = [intval($value[0])];
-            });
-        } elseif (extension_loaded('gmp')) {
-            array_walk($values, function(&$value) {
-                $value = [gmp_strval(gmp_init($value[0]))];
-            });
-        } else {
-            $values = [[0]];
-        }
-        return $values;
-    }
-
-    /**
      * @dataProvider providerTestPutTAGFloat
      */
     public function testPutTAGFloat($value)
     {
-        DataHandler::putTAGFloat($this->fPtr, $value);
+        $this->dataHandler->putTAGFloat($this->fPtr, $value);
 
         $this->assertSame(
             (pack('d', 1) == "\77\360\0\0\0\0\0\0")
@@ -220,7 +159,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGDouble($value)
     {
-        DataHandler::putTAGDouble($this->fPtr, $value);
+        $this->dataHandler->putTAGDouble($this->fPtr, $value);
 
         $this->assertSame(
             (pack('d', 1) == "\77\360\0\0\0\0\0\0")
@@ -249,7 +188,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGByteArray($value)
     {
-        DataHandler::putTAGByteArray($this->fPtr, $value);
+        $this->dataHandler->putTAGByteArray($this->fPtr, $value);
 
         $this->assertSame(
             pack('N', count($value))
@@ -277,7 +216,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
      */
     public function testPutTAGIntArray($value)
     {
-        DataHandler::putTAGIntArray($this->fPtr, $value);
+        $this->dataHandler->putTAGIntArray($this->fPtr, $value);
 
         $this->assertSame(
             pack('N', count($value))
