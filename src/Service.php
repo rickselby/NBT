@@ -111,7 +111,7 @@ class Service
      *
      * @param string $string String containing NBT data
      *
-     * @return Node
+     * @return Node|false
      */
     public function readString($string)
     {

@@ -4,7 +4,6 @@ namespace Nbt;
 
 class DataHandler
 {
-
     private $floatString = "\77\360\0\0\0\0\0\0";
 
     /**
@@ -211,11 +210,7 @@ class DataHandler
      */
     public function getTAGFloat($fPtr)
     {
-        list(, $value) = (pack('d', 1) == $this->floatString)
-            ? unpack('f', fread($fPtr, 4))
-            : unpack('f', strrev(fread($fPtr, 4)));
-
-        return $value;
+        return $this->getTAGFloatDouble($fPtr, 'f', 4);
     }
 
     /**
@@ -240,11 +235,7 @@ class DataHandler
      */
     public function getTAGDouble($fPtr)
     {
-        list(, $value) = (pack('d', 1) == $this->floatString)
-            ? unpack('d', fread($fPtr, 8))
-            : unpack('d', strrev(fread($fPtr, 8)));
-
-        return $value;
+        return $this->getTAGFloatDouble($fPtr, 'd', 8);
     }
 
     /**
@@ -261,11 +252,29 @@ class DataHandler
     }
 
     /**
+     * Get a double or a float from the file.
+     *
+     * @param resource $fPtr
+     * @param string   $packType Code for the unpack function
+     * @param int      $bytes    Bytes to read
+     *
+     * @return float
+     */
+    private function getTAGFloatDouble($fPtr, $packType, $bytes)
+    {
+        list(, $value) = (pack('d', 1) == $this->floatString)
+            ? unpack($packType, fread($fPtr, $bytes))
+            : unpack($packType, strrev(fread($fPtr, $bytes)));
+
+        return $value;
+    }
+
+    /**
      * Write a double or a float to the file.
      *
      * @param resource $fPtr
      * @param float    $value
-     * @param string   $packType
+     * @param string   $packType Code for the pack function
      *
      * @return bool
      */
@@ -345,7 +354,7 @@ class DataHandler
      *
      * @param resource $fPtr
      * @param array    $array
-     * @param string   $packType
+     * @param string   $packType Code for the pack function
      *
      * @return bool
      */

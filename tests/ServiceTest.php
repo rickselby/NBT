@@ -90,8 +90,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteString()
     {
-        $this->service->setMethods(['writeFilePointer']);
-        $service = $this->getServiceMock();
+        $service = $this->getWriteStringServiceMock();
 
         $service->expects($this->once())->method('writeFilePointer');
 
@@ -100,11 +99,15 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteStringReturnsString()
     {
-        $this->service->setMethods(['writeFilePointer']);
-        $service = $this->getServiceMock();
-
+        $service = $this->getWriteStringServiceMock();
 
         $this->assertInternalType('string', $service->writeString(new \Nbt\Node()));
+    }
+
+    private function getWriteStringServiceMock()
+    {
+        $this->service->setMethods(['writeFilePointer']);
+        return $this->getServiceMock();
     }
 
     public function testWriteFile()
