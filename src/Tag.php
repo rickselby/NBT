@@ -152,9 +152,6 @@ class Tag
         }
 
         return $node;
-
-        // TODO : this should check that the children are the right type?
-        // Wait.. children don't have names or types. It's ONLY their payloads.
     }
 
     /**
