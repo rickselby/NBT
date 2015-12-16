@@ -95,7 +95,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
         $service->expects($this->once())->method('writeFilePointer');
 
-        $service->writeString('astring');
+        $service->writeString(new \Nbt\Node());
     }
 
     public function testWriteStringReturnsString()
