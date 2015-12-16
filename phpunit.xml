@@ -2,7 +2,7 @@
 <phpunit colors="true" bootstrap="./vendor/autoload.php">
     <filter>
         <whitelist>
-            <directory suffix=".php">./lib/</directory>
+            <directory suffix=".php">./src/</directory>
         </whitelist>
     </filter>
     <testsuites>
@@ -10,7 +10,4 @@
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
-    <logging>
-        <log type="coverage-html" target="./coverage" />
-    </logging>
 </phpunit>

@@ -38,6 +38,6 @@
         "mikey179/vfsStream": "^1.6.0"
     },
     "autoload": {
-        "psr-0": {"Nbt": "lib/"}
+        "psr-4": {"Nbt\\": "src/"}
     }
 }
