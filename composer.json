@@ -4,7 +4,7 @@
     "description": "Parser/Writer for the NBT file format",
     "keywords": ["NBT", "decode", "encode", "binary"],
     "homepage": "https://github.com/rickselby/NBT",
-    "license": "GNU",
+    "license": "MIT",
     "authors": [
         {
             "name": "Justin Martin",
@@ -33,9 +33,14 @@
     "require": {
         "php": ">=5.4.0",
         "nicmart/tree": "~0.2"
-
+    },
+    "require-dev": {
+        "mikey179/vfsStream": "^1.6.0"
     },
     "autoload": {
-        "psr-0": {"Nbt": "lib/"}
+        "psr-4": {
+            "Nbt\\": "src/",
+            "Nbt\\Tests\\": "tests/"
+        }
     }
 }

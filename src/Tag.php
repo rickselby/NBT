@@ -2,8 +2,8 @@
 
 namespace Nbt;
 
-class Tag {
-
+class Tag
+{
     const TAG_END = 0;
     const TAG_BYTE = 1;
     const TAG_SHORT = 2;
@@ -18,7 +18,7 @@ class Tag {
     const TAG_INT_ARRAY = 11;
 
     /**
-     * Get a TAG_BYTE node
+     * Get a TAG_BYTE node.
      *
      * @param string $name
      * @param int    $value Single byte
@@ -31,7 +31,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_SHORT node
+     * Get a TAG_SHORT node.
      *
      * @param string $name
      * @param int    $value Short integer
@@ -43,8 +43,8 @@ class Tag {
         return self::simpleTag(self::TAG_SHORT, $name, $value);
     }
 
-   /**
-     * Get a TAG_INT node
+    /**
+     * Get a TAG_INT node.
      *
      * @param string $name
      * @param int    $value
@@ -57,7 +57,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_LONG node
+     * Get a TAG_LONG node.
      *
      * @param string $name
      * @param int    $value
@@ -70,7 +70,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_FLOAT node
+     * Get a TAG_FLOAT node.
      *
      * @param string $name
      * @param float  $value
@@ -83,10 +83,10 @@ class Tag {
     }
 
     /**
-     * Get a TAG_DOUBLE node
+     * Get a TAG_DOUBLE node.
      *
      * @param string $name
-     * @param double $value
+     * @param float  $value
      *
      * @return Node
      */
@@ -96,7 +96,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_BYTE_ARRAY node
+     * Get a TAG_BYTE_ARRAY node.
      *
      * @param string $name
      * @param int[]  $value Array of bytes
@@ -109,7 +109,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_STRING node
+     * Get a TAG_STRING node.
      *
      * @param string $name
      * @param string $value Array of bytes
@@ -122,7 +122,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_INT_ARRAY node
+     * Get a TAG_INT_ARRAY node.
      *
      * @param string $name
      * @param int[]  $value Array of integers
@@ -135,7 +135,7 @@ class Tag {
     }
 
     /**
-     * Get a TAG_LIST node
+     * Get a TAG_LIST node.
      *
      * @param string $name
      * @param int    $payloadType Byte describing the payload type
@@ -147,18 +147,15 @@ class Tag {
     {
         $node = (new Node())->setType(self::TAG_LIST)->setName($name)->setPayloadType($payloadType);
 
-        foreach($payload AS $child) {
+        foreach ($payload as $child) {
             $node->addChild($child->makeListPayload());
         }
 
         return $node;
-
-        // TODO : this should check that the children are the right type?
-        // Wait.. children don't have names or types. It's ONLY their payloads.
     }
 
     /**
-     * Get a TAG_COMPOUND node
+     * Get a TAG_COMPOUND node.
      *
      * @param string $name
      * @param Node[] $nodes Array of nodes to add as children
@@ -169,7 +166,7 @@ class Tag {
     {
         $node = (new Node())->setType(self::TAG_COMPOUND)->setName($name);
 
-        foreach($nodes AS $child) {
+        foreach ($nodes as $child) {
             $node->addChild($child);
         }
 
@@ -177,7 +174,7 @@ class Tag {
     }
 
     /**
-     * Get a simple tag with a value
+     * Get a simple tag with a value.
      *
      * @param int    $type  Byte representing the tag type
      * @param string $name
@@ -188,21 +185,5 @@ class Tag {
     private static function simpleTag($type, $name, $value)
     {
         return (new Node())->setType($type)->setName($name)->setValue($value);
-    }
-
-    /**
-     * Add child nodes to a parent node
-     *
-     * @param Node   $parent
-     * @param Node[] $children Array of child nodes
-     *
-     * @return Node
-     */
-    private static function addChildren($parent, $children)
-    {
-        foreach($children AS $child) {
-            $parent->addChild($child);
-        }
-        return $parent;
     }
 }

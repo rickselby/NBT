@@ -13,14 +13,8 @@ The library can be pulled in using composer; add the following to your composer.
 
 ```
 {
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/rickselby/NBT"
-        }
-    ],
     "require": {
-        "rickselby/NBT": "~3.1"
+        "rickselby/nbt": "~4.0"
     }
 }
 ```
@@ -29,7 +23,7 @@ The library can be pulled in using composer; add the following to your composer.
 
 Reading in from files, resources, or strings:
 ```php
-$nbtService = new \Nbt\Service();
+$nbtService = new \Nbt\Service(new \Nbt\DataHandler());
 $tree = $nbtService->loadFile('filename.nbt');
 $tree = $nbtService->readFilePointer($fPtr);
 $tree = $nbtService->readString($nbtString);
@@ -79,10 +73,10 @@ $tree = \Nbt\Tag::tagList('aList', \Nbt\Tag::TAG_STRING, [
 
 ## History
 
-The original PHP NBT package was written by [TheFrozenFire](//github.com/TheFrozenFire/PHP-NBT-Decoder-Encoder). 
+The original PHP NBT package was written by [TheFrozenFire](//github.com/TheFrozenFire/PHP-NBT-Decoder-Encoder).
 
-This repo has been forked by many, but most forks have one of two issues; they either don't handle TAG_INT_ARRAY or don't correctly handle writing to a file pointer. 
+This repo has been forked by many, but most forks have one of two issues; they either don't handle TAG_INT_ARRAY or don't correctly handle writing to a file pointer.
 
 The returned format - an array - isn't ideal for creating your own NBT data, and some kind of wrapper was required to assist in creation.
 
-I tidied up the code a little, then added nicmart/tree to store the NBT data; after much work, it's nothing like the original, so I've pulled it into it's own (non-forked) repo. 
+I tidied up the code a little, then added nicmart/tree to store the NBT data; after much work, it's nothing like the original, so I've pulled it into it's own (non-forked) repo.
