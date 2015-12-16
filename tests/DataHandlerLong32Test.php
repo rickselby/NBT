@@ -96,7 +96,9 @@ class DataHandlerLong32Test extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         if (PHP_INT_SIZE >= 8) {
-            $this->dataHandler = $this->getMockBuilder('\Nbt\DataHandler')->getMock();
+            $this->dataHandler = $this->getMockBuilder('\Nbt\DataHandler')
+                ->setMethods(['is64bit'])
+                ->getMock();
             $this->dataHandler->expects($this->any())->method('is64bit')->willReturn(false);
         } else {
             $this->dataHandler = new DataHandler();

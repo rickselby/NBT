@@ -381,7 +381,7 @@ class DataHandler
      *
      * @return boolean
      */
-    private function is64bit()
+    public function is64bit()
     {
         return (PHP_INT_SIZE >= 8);
     }
