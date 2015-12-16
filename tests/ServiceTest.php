@@ -167,6 +167,8 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $this->dataHandler = $this->getMockBuilder('\Nbt\DataHandler')
             ->getMock();
 
+        $this->dataHandler->expects($this->any())->method('is64bit')->willReturn(true);
+
         $this->service = $this->getMockBuilder('\Nbt\Service')
             ->setConstructorArgs([$this->dataHandler]);
 

@@ -10,6 +10,7 @@ namespace Nbt;
 
 class Service
 {
+    /** @var \Nbt\DataHandler **/
     private $dataHandler;
 
     /**
@@ -19,7 +20,7 @@ class Service
     {
         $this->dataHandler = $dataHandler;
 
-        if (PHP_INT_SIZE < 8) {
+        if (!$this->dataHandler->is64bit()) {
             /*
              *  GMP isn't required for 64-bit machines as we're handling signed ints. We can use native math instead.
              *  We still need to use GMP for 32-bit builds of PHP though.
@@ -64,7 +65,7 @@ class Service
      *
      * @return true
      */
-    public function writeFile($filename, $tree, $wrapper = 'compress.zlib://')
+    public function writeFile($filename, Node $tree, $wrapper = 'compress.zlib://')
     {
         $fPtr = fopen("{$wrapper}{$filename}", 'wb');
         $this->writeFilePointer($fPtr, $tree);
@@ -76,7 +77,7 @@ class Service
      *
      * @param resource $fPtr File/Stream pointer
      *
-     * @return Node
+     * @return Node|false
      */
     public function readFilePointer($fPtr)
     {
@@ -97,7 +98,7 @@ class Service
      * @param resource $fPtr File/Stream pointer
      * @param Node     $tree Root of the tree to write
      */
-    public function writeFilePointer($fPtr, $tree)
+    public function writeFilePointer($fPtr, Node $tree)
     {
         if (!$this->writeTag($fPtr, $tree)) {
             trigger_error('Failed to write tree to file/resource.', E_USER_WARNING);
@@ -128,7 +129,7 @@ class Service
      *
      * @return string
      */
-    public function writeString($tree)
+    public function writeString(Node $tree)
     {
         $stream = fopen('php://memory', 'r+b');
         $this->writeFilePointer($stream, $tree);
@@ -145,7 +146,7 @@ class Service
      *
      * @return bool
      */
-    private function traverseTag($fPtr, &$node)
+    private function traverseTag($fPtr, Node &$node)
     {
         if (feof($fPtr)) {
             return false;
@@ -172,7 +173,7 @@ class Service
      *
      * @return bool
      */
-    private function writeTag($fPtr, $node)
+    private function writeTag($fPtr, Node $node)
     {
         return $this->dataHandler->putTAGByte($fPtr, $node->getType())
             && $this->dataHandler->putTAGString($fPtr, $node->getName())
@@ -188,7 +189,7 @@ class Service
      *
      * @return mixed
      */
-    private function readType($fPtr, $tagType, $node = null)
+    private function readType($fPtr, $tagType, Node $node)
     {
         switch ($tagType) {
             case Tag::TAG_BYTE: // Signed byte (8 bit)
@@ -255,7 +256,7 @@ class Service
      *
      * @return bool
      */
-    private function writeType($fPtr, $tagType, $node)
+    private function writeType($fPtr, $tagType, Node $node)
     {
         switch ($tagType) {
             case Tag::TAG_BYTE: // Signed byte (8 bit)
@@ -295,7 +296,7 @@ class Service
                         return false;
                     }
                 }
-                if (!$this->writeType($fPtr, Tag::TAG_END, null)) {
+                if (!$this->writeType($fPtr, Tag::TAG_END, new Node())) {
                     return false;
                 }
 

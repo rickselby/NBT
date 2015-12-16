@@ -4,12 +4,15 @@ namespace Nbt;
 
 class DataHandler
 {
+
+    private $floatString = "\77\360\0\0\0\0\0\0";
+
     /**
      * Read a byte tag from the file.
      *
      * @param resource $fPtr
      *
-     * @return byte
+     * @return int
      */
     public function getTAGByte($fPtr)
     {
@@ -20,7 +23,7 @@ class DataHandler
      * Write a byte tag to the file.
      *
      * @param resource $fPtr
-     * @param byte     $byte
+     * @param int      $byte
      *
      * @return bool
      */
@@ -176,20 +179,22 @@ class DataHandler
                 );
             }
 
+            $quarters = [];
+
             // 32-bit longs seem to be too long for pack() on 32-bit machines. Split into 4x16-bit instead.
-            $quarters[ 0 ] = gmp_div(gmp_and($long, '0xFFFF000000000000'), gmp_pow(2, 48));
-            $quarters[ 1 ] = gmp_div(gmp_and($long, '0x0000FFFF00000000'), gmp_pow(2, 32));
-            $quarters[ 2 ] = gmp_div(gmp_and($long, '0x00000000FFFF0000'), gmp_pow(2, 16));
-            $quarters[ 3 ] = gmp_and($long, '0xFFFF');
+            $quarters[0] = gmp_div(gmp_and($long, '0xFFFF000000000000'), gmp_pow(2, 48));
+            $quarters[1] = gmp_div(gmp_and($long, '0x0000FFFF00000000'), gmp_pow(2, 32));
+            $quarters[2] = gmp_div(gmp_and($long, '0x00000000FFFF0000'), gmp_pow(2, 16));
+            $quarters[3] = gmp_and($long, '0xFFFF');
 
             $wResult = is_int(fwrite(
                 $fPtr,
                 pack(
                     'nnnn',
-                    gmp_intval($quarters[ 0 ]),
-                    gmp_intval($quarters[ 1 ]),
-                    gmp_intval($quarters[ 2 ]),
-                    gmp_intval($quarters[ 3 ])
+                    gmp_intval($quarters[0]),
+                    gmp_intval($quarters[1]),
+                    gmp_intval($quarters[2]),
+                    gmp_intval($quarters[3])
                 )
             ));
         }
@@ -206,7 +211,7 @@ class DataHandler
      */
     public function getTAGFloat($fPtr)
     {
-        list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
+        list(, $value) = (pack('d', 1) == $this->floatString)
             ? unpack('f', fread($fPtr, 4))
             : unpack('f', strrev(fread($fPtr, 4)));
 
@@ -223,14 +228,7 @@ class DataHandler
      */
     public function putTAGFloat($fPtr, $float)
     {
-        return is_int(
-            fwrite(
-                $fPtr,
-                (pack('d', 1) == "\77\360\0\0\0\0\0\0")
-                    ? pack('f', $float)
-                    : strrev(pack('f', $float))
-            )
-        );
+        return $this->putTagFloatDouble($fPtr, $float, 'f');
     }
 
     /**
@@ -242,7 +240,7 @@ class DataHandler
      */
     public function getTAGDouble($fPtr)
     {
-        list(, $value) = (pack('d', 1) == "\77\360\0\0\0\0\0\0")
+        list(, $value) = (pack('d', 1) == $this->floatString)
             ? unpack('d', fread($fPtr, 8))
             : unpack('d', strrev(fread($fPtr, 8)));
 
@@ -259,12 +257,26 @@ class DataHandler
      */
     public function putTAGDouble($fPtr, $double)
     {
+        return $this->putTagFloatDouble($fPtr, $double, 'd');
+    }
+
+    /**
+     * Write a double or a float to the file.
+     *
+     * @param resource $fPtr
+     * @param float    $value
+     * @param string   $packType
+     *
+     * @return bool
+     */
+    private function putTagFloatDouble($fPtr, $value, $packType)
+    {
         return is_int(
             fwrite(
                 $fPtr,
-                (pack('d', 1) == "\77\360\0\0\0\0\0\0")
-                    ? pack('d', $double)
-                    : strrev(pack('d', $double))
+                (pack('d', 1) == $this->floatString)
+                    ? pack($packType, $value)
+                    : strrev(pack($packType, $value))
             )
         );
     }
@@ -274,7 +286,7 @@ class DataHandler
      *
      * @param resource $fPtr
      *
-     * @return byte[]
+     * @return int[]
      */
     public function getTAGByteArray($fPtr)
     {
@@ -287,20 +299,13 @@ class DataHandler
      * Write an array of bytes to the file.
      *
      * @param resource $fPtr
-     * @param byte[]   $array
+     * @param int[]    $array
      *
      * @return bool
      */
     public function putTAGByteArray($fPtr, $array)
     {
-        return $this->putTAGInt($fPtr, count($array))
-            && is_int(fwrite(
-                $fPtr,
-                call_user_func_array(
-                    'pack',
-                    array_merge(['c'.count($array)], $array)
-                )
-            ));
+        return $this->putTAGArray($fPtr, $array, 'c');
     }
 
     /**
@@ -332,12 +337,26 @@ class DataHandler
      */
     public function putTAGIntArray($fPtr, $array)
     {
+        return $this->putTAGArray($fPtr, $array, 'N');
+    }
+
+    /**
+     * Write an array of integers to the file.
+     *
+     * @param resource $fPtr
+     * @param array    $array
+     * @param string   $packType
+     *
+     * @return bool
+     */
+    private function putTagArray($fPtr, $array, $packType)
+    {
         return $this->putTAGInt($fPtr, count($array))
             && is_int(fwrite(
                 $fPtr,
                 call_user_func_array(
                     'pack',
-                    array_merge(['N'.count($array)], $array)
+                    array_merge([$packType.count($array)], $array)
                 )
             ));
     }
@@ -377,9 +396,9 @@ class DataHandler
     }
 
     /**
-     * Check if we're on a 64 bit machine
+     * Check if we're on a 64 bit machine.
      *
-     * @return boolean
+     * @return bool
      */
     public function is64bit()
     {
