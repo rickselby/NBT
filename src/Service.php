@@ -244,6 +244,8 @@ class Service
                     $compoundNode = new Node();
                 }
                 break;
+            default:
+                throw new \Exception('Unsupported tag type: '. $tagType);
         }
     }
 
