@@ -16,6 +16,7 @@ class Tag
     const TAG_LIST = 9;
     const TAG_COMPOUND = 10;
     const TAG_INT_ARRAY = 11;
+    const TAG_LONG_ARRAY = 12;
 
     /**
      * Get a TAG_BYTE node.
