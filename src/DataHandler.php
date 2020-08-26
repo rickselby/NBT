@@ -350,6 +350,38 @@ class DataHandler
     }
 
     /**
+     * Read an array of integers from the file.
+     *
+     * @param resource $fPtr
+     *
+     * @return int[]
+     */
+    public function getTAGLongArray($fPtr)
+    {
+        $arrayLength = $this->getTAGInt($fPtr);
+
+        $values = [];
+        for ($i = 0; $i < $arrayLength; ++$i) {
+            $values[] = $this->getTAGLong($fPtr);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Write an array of integers to the file.
+     *
+     * @param resource $fPtr
+     * @param int[]    $array
+     *
+     * @return bool
+     */
+    public function putTAGLongArray($fPtr, $array)
+    {
+        return $this->putTAGArray($fPtr, $array, 'N*');
+    }
+
+    /**
      * Write an array of integers to the file.
      *
      * @param resource $fPtr

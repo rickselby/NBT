@@ -219,6 +219,9 @@ class Service
             case Tag::TAG_INT_ARRAY:
                 $node->setValue($this->dataHandler->getTAGIntArray($fPtr));
                 break;
+            case Tag::TAG_LONG_ARRAY:
+                $node->setValue($this->dataHandler->getTAGLongArray($fPtr));
+                break;
             case Tag::TAG_LIST: // List
                 $tagID = $this->dataHandler->getTAGByte($fPtr);
                 $listLength = $this->dataHandler->getTAGInt($fPtr);
@@ -244,6 +247,8 @@ class Service
                     $compoundNode = new Node();
                 }
                 break;
+            default:
+                throw new \Exception('Unsupported tag type: '. $tagType);
         }
     }
 
