@@ -6,12 +6,8 @@ namespace Nbt;
  * We're going to rejig the node to accept the values we need to associate
  * with a node.
  */
-class Node implements \Tree\Node\NodeInterface
+class Node extends \Tree\Node\Node
 {
-    use \Tree\Node\NodeTrait {
-        __construct as private __traitConstruct;
-    }
-
     /**
      * Create a node, optionally passing an array of children.
      *
@@ -19,7 +15,7 @@ class Node implements \Tree\Node\NodeInterface
      */
     public function __construct($children = [])
     {
-        $this->__traitConstruct(null, $children);
+        parent::__construct(null, $children);
         $this->value = [];
     }
 
