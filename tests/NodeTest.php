@@ -2,7 +2,9 @@
 
 namespace Nbt\Tests;
 
-class NodeTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class NodeTest extends TestCase
 {
     /**
      * @dataProvider providerSetKey
@@ -115,7 +117,7 @@ class NodeTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             $expected,
             $node->findChildByName($find)
-            );
+        );
     }
 
     public function providerFindChildByName()
@@ -152,5 +154,4 @@ class NodeTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
-
 }

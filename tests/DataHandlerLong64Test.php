@@ -6,8 +6,9 @@ use Nbt\DataHandler;
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
 use \org\bovigo\vfs\content\StringBasedFileContent;
+use PHPUnit\Framework\TestCase;
 
-class DataHandlerLong64Test extends \PHPUnit_Framework_TestCase
+class DataHandlerLong64Test extends TestCase
 {
     private $vRoot;
     private $vFile;
@@ -65,7 +66,7 @@ class DataHandlerLong64Test extends \PHPUnit_Framework_TestCase
         // Tests won't run if PHP_INT_SIZE < 8, but not certain the providers
         // won't be initialised...
         if (PHP_INT_SIZE >= 8) {
-            array_walk($values, function(&$value) {
+            array_walk($values, function (&$value) {
                 $value = [intval($value[0])];
             });
         }
@@ -75,7 +76,7 @@ class DataHandlerLong64Test extends \PHPUnit_Framework_TestCase
 
     /*************************************************************************/
 
-    public function setUp()
+    public function setUp(): void
     {
         if (PHP_INT_SIZE < 8) {
             $this->markTestSkipped('Can\'t test 64 bit code on 32-bit machine');

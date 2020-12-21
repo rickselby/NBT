@@ -4,10 +4,14 @@ namespace Nbt\Tests;
 
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
+use PHPUnit\Framework\TestCase;
 
-class RealTest extends \PHPUnit_Framework_TestCase
+class RealTest extends TestCase
 {
-    public $service, $usingGMP, $vRoot, $vFile;
+    public $service;
+    public $usingGMP;
+    public $vRoot;
+    public $vFile;
 
     /**
      * @dataProvider providerFiles
@@ -31,7 +35,7 @@ class RealTest extends \PHPUnit_Framework_TestCase
 
     /**************************************************************************/
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->service = new \Nbt\Service(new \Nbt\DataHandler());
 
@@ -74,8 +78,7 @@ class RealTest extends \PHPUnit_Framework_TestCase
     public function bigTree()
     {
         $byteArray = [];
-        for ($n = 0; $n < 1000; $n++)
-        {
+        for ($n = 0; $n < 1000; $n++) {
             $byteArray[$n] = ($n*$n*255+$n*7)%100;
         }
 
@@ -184,7 +187,8 @@ class RealTest extends \PHPUnit_Framework_TestCase
                     ->setValue(127),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_BYTE_ARRAY)
-                    ->setName('byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))')
+                    ->setName('byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with '
+                        .'n=0 (0, 62, 34, 16, 8, ...))')
                     ->setValue($byteArray),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_DOUBLE)
@@ -207,7 +211,9 @@ class RealTest extends \PHPUnit_Framework_TestCase
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_STRING)
                     ->setName('description')
-                    ->setValue('This is a test of all the tag types up to the introduction of Anvil, including TAG_INT_ARRAY. It\'s not necessarily more exhaustive than bigtest.nbt, but it should be useful to test certain edge cases.'),
+                    ->setValue('This is a test of all the tag types up to the introduction of Anvil, including '
+                        .'TAG_INT_ARRAY. It\'s not necessarily more exhaustive than bigtest.nbt, but it should be '
+                        .'useful to test certain edge cases.'),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_COMPOUND)
                     ->setName('bytes')
@@ -345,5 +351,4 @@ class RealTest extends \PHPUnit_Framework_TestCase
                     ]),
             ]);
     }
-
 }

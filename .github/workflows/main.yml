@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0']
+
+    name: PHP ${{ matrix.php-version }} Laravel ${{ matrix.laravel-version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          tools: phpunit
+
+      - name: Install dependencies
+        run: composer install --no-suggest --prefer-dist -n -o
+
+      - name: Run tests
+        run: phpunit
+
+  code-style:
+    runs-on: ubuntu-latest
+
+    name: Code Style Check
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+          tools: phpcs
+
+      - name: Install dependencies
+        run: composer install --no-suggest --prefer-dist -n -o
+
+      - name: Run tests
+        run: phpcs
