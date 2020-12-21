@@ -4,8 +4,9 @@ namespace Nbt\Tests;
 
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
+use PHPUnit\Framework\TestCase;
 
-class RealTest extends \PHPUnit_Framework_TestCase
+class RealTest extends TestCase
 {
     public $service;
     public $usingGMP;
@@ -34,7 +35,7 @@ class RealTest extends \PHPUnit_Framework_TestCase
 
     /**************************************************************************/
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->service = new \Nbt\Service(new \Nbt\DataHandler());
 

@@ -3,6 +3,7 @@
 namespace Nbt\tests;
 
 use Nbt\Tag;
+use PHPUnit\Framework\TestCase;
 
 /**
  * We have tests for the Node class, so just need to check the correct type is
@@ -11,7 +12,7 @@ use Nbt\Tag;
  * Not sure this is the greatest, most verbose way of doing the tests...
  * but it covers everything we want to check.
  */
-class TagTest extends \PHPUnit_Framework_TestCase
+class TagTest extends TestCase
 {
     /**
      * @dataProvider providerTestTagGetters

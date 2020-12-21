@@ -4,8 +4,11 @@ namespace Nbt\Tests;
 
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
+use PHPUnit\Framework\Error;
+use PHPUnit\Framework\Error\Warning;
+use PHPUnit\Framework\TestCase;
 
-class ServiceTest extends \PHPUnit_Framework_TestCase
+class ServiceTest extends TestCase
 {
     public $dataHandler;
     public $service;
@@ -14,7 +17,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFile()
     {
-        $this->service->setMethods(['readFilePointer']);
+        $this->service->onlyMethods(['readFilePointer']);
         $service = $this->getServiceMock();
 
         $service->expects($this->once())->method('readFilePointer');
@@ -24,8 +27,8 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFileNotExistsTriggersError()
     {
-        $this->setExpectedException('PHPUnit_Framework_Error');
-        $this->service->setMethods(null);
+        $this->expectWarning();
+        $this->service->onlyMethods([]);
 
         $service = $this->getServiceMock();
 
@@ -34,23 +37,20 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFileNotExistsReturnsFalse()
     {
-        $warningEnabledOrig = \PHPUnit_Framework_Error_Warning::$enabled;
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
         $errorReporting = error_reporting(0);
 
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
 
         $service = $this->getServiceMock();
 
         $this->assertFalse($service->loadFile('', ''));
 
-        \PHPUnit_Framework_Error_Warning::$enabled = $warningEnabledOrig;
         error_reporting($errorReporting);
     }
 
     public function testReadString()
     {
-        $this->service->setMethods(['readFilePointer']);
+        $this->service->onlyMethods(['readFilePointer']);
         $service = $this->getServiceMock();
 
         $service->expects($this->once())->method('readFilePointer');
@@ -60,7 +60,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testReadFilePointerEmptyFile()
     {
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
         $service = $this->getServiceMock();
 
         $fPtr = fopen($this->vFile->url(), 'rb');
@@ -70,7 +70,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testReadFilePointerValid()
     {
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
         $service = $this->getServiceMock();
 
         $this->dataHandler->expects($this->any())
@@ -83,7 +83,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testReadFilePointerValidButEmpty()
     {
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
         $service = $this->getServiceMock();
 
         $fPtr = fopen('tests/Data/smalltest.nbt', 'rb');
@@ -104,18 +104,18 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     {
         $service = $this->getWriteStringServiceMock();
 
-        $this->assertInternalType('string', $service->writeString(new \Nbt\Node()));
+        $this->assertIsString($service->writeString(new \Nbt\Node()));
     }
 
     private function getWriteStringServiceMock()
     {
-        $this->service->setMethods(['writeFilePointer']);
+        $this->service->onlyMethods(['writeFilePointer']);
         return $this->getServiceMock();
     }
 
     public function testWriteFile()
     {
-        $this->service->setMethods(['writeFilePointer']);
+        $this->service->onlyMethods(['writeFilePointer']);
         $service = $this->getServiceMock();
 
         $service->expects($this->once())->method('writeFilePointer');
@@ -125,9 +125,9 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteFilePointerTriggersErrorIfTreeEmpty()
     {
-        $this->setExpectedException('PHPUnit_Framework_Error');
+        $this->expectError();
 
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
         $service = $this->getServiceMock();
 
         $fPtr = fopen($this->vFile->url(), 'wb');
@@ -136,24 +136,21 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteFilePointerReturnsFalseIfTreeEmpty()
     {
-        $warningEnabledOrig = \PHPUnit_Framework_Error_Warning::$enabled;
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
         $errorReporting = error_reporting(0);
 
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
 
         $service = $this->getServiceMock();
 
         $fPtr = fopen($this->vFile->url(), 'wb');
         $this->assertFalse($service->writeFilePointer($fPtr, new \Nbt\Node()));
 
-        \PHPUnit_Framework_Error_Warning::$enabled = $warningEnabledOrig;
         error_reporting($errorReporting);
     }
 
     public function testWriteFilePointerWorks()
     {
-        $this->service->setMethods(null);
+        $this->service->onlyMethods([]);
         $service = $this->getServiceMock();
 
         $this->dataHandler->expects($this->any())
@@ -168,7 +165,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
     /**************************************************************************/
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->dataHandler = $this->getMockBuilder('\Nbt\DataHandler')
             ->getMock();
