@@ -19,7 +19,7 @@ jobs:
       matrix:
         php-version: ['7.3', '7.4', '8.0']
 
-    name: PHP ${{ matrix.php-version }} Laravel ${{ matrix.laravel-version }}
+    name: PHP ${{ matrix.php-version }}
 
     steps:
       - name: Checkout
