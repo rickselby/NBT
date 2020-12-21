@@ -30,6 +30,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
+          tools: phpunit
 
       - name: Install dependencies
         run: composer install --no-suggest --prefer-dist -n -o
@@ -51,6 +52,7 @@ jobs:
         with:
           php-version: '8.0'
           coverage: none
+          tools: phpcs
 
       - name: Install dependencies
         run: composer install --no-suggest --prefer-dist -n -o
