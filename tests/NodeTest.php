@@ -2,7 +2,9 @@
 
 namespace Nbt\Tests;
 
-class NodeTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class NodeTest extends TestCase
 {
     /**
      * @dataProvider providerSetKey

@@ -6,8 +6,9 @@ use Nbt\DataHandler;
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
 use \org\bovigo\vfs\content\StringBasedFileContent;
+use PHPUnit\Framework\TestCase;
 
-class DataHandlerLong32Test extends \PHPUnit_Framework_TestCase
+class DataHandlerLong32Test extends TestCase
 {
     private $vRoot;
     private $vFile;
@@ -93,11 +94,11 @@ class DataHandlerLong32Test extends \PHPUnit_Framework_TestCase
 
     /*************************************************************************/
 
-    public function setUp()
+    public function setUp(): void
     {
         if (PHP_INT_SIZE >= 8) {
             $this->dataHandler = $this->getMockBuilder('\Nbt\DataHandler')
-                ->setMethods(['is64bit'])
+                ->onlyMethods(['is64bit'])
                 ->getMock();
             $this->dataHandler->expects($this->any())->method('is64bit')->willReturn(false);
         } else {

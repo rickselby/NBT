@@ -5,15 +5,16 @@ namespace Nbt\Tests;
 use Nbt\DataHandler;
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
+use PHPUnit\Framework\TestCase;
 
-class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
+class DataHandlerPutTest extends TestCase
 {
     private $vRoot;
     private $vFile;
     private $fPtr;
     public $dataHandler;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->vRoot = vfsStream::setup();
         $this->vFile = new vfsStreamFile('sample.nbt');
@@ -23,7 +24,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
         $this->dataHandler = new DataHandler();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         fclose($this->fPtr);
     }

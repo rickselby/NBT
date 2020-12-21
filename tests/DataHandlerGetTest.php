@@ -6,14 +6,15 @@ use Nbt\DataHandler;
 use \org\bovigo\vfs\vfsStream;
 use \org\bovigo\vfs\vfsStreamFile;
 use \org\bovigo\vfs\content\StringBasedFileContent;
+use PHPUnit\Framework\TestCase;
 
-class DataHandlerGetTest extends \PHPUnit_Framework_TestCase
+class DataHandlerGetTest extends TestCase
 {
     private $vRoot;
     private $vFile;
     public $dataHandler;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->vRoot = vfsStream::setup();
         $this->vFile = new vfsStreamFile('sample.nbt');
