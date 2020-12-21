@@ -1,7 +1,3 @@
-[![Build Status](https://travis-ci.org/rickselby/NBT.svg?branch=master)](https://travis-ci.org/rickselby/NBT)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rickselby/NBT/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rickselby/NBT/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/rickselby/NBT/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/rickselby/NBT/?branch=master)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/89a305c5-e522-4523-b88d-facda86a31ea/mini.png)](https://insight.sensiolabs.com/projects/89a305c5-e522-4523-b88d-facda86a31ea)
 
 This is a Named Binary Tag parser based upon the specification by Markus Persson.
 
