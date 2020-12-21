@@ -36,7 +36,7 @@ jobs:
         run: composer install --no-suggest --prefer-dist -n -o
 
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: phpunit
 
   code-style:
     runs-on: ubuntu-latest
@@ -58,4 +58,4 @@ jobs:
         run: composer install --no-suggest --prefer-dist -n -o
 
       - name: Run tests
-        run: vendor/bin/phpcs
+        run: phpcs
