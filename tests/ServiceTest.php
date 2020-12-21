@@ -7,7 +7,10 @@ use \org\bovigo\vfs\vfsStreamFile;
 
 class ServiceTest extends \PHPUnit_Framework_TestCase
 {
-    public $service, $vRoot, $vFile, $dataHandler;
+    public $dataHandler;
+    public $service;
+    public $vRoot;
+    public $vFile;
 
     public function testLoadFile()
     {
@@ -32,7 +35,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     public function testLoadFileNotExistsReturnsFalse()
     {
         $warningEnabledOrig = \PHPUnit_Framework_Error_Warning::$enabled;
-        \PHPUnit_Framework_Error_Warning::$enabled = FALSE;
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
         $errorReporting = error_reporting(0);
 
         $this->service->setMethods(null);
@@ -134,7 +137,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     public function testWriteFilePointerReturnsFalseIfTreeEmpty()
     {
         $warningEnabledOrig = \PHPUnit_Framework_Error_Warning::$enabled;
-        \PHPUnit_Framework_Error_Warning::$enabled = FALSE;
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
         $errorReporting = error_reporting(0);
 
         $this->service->setMethods(null);
@@ -200,5 +203,4 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
                     ->setValue('Bananrama')
             ]);
     }
-
 }

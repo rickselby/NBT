@@ -65,7 +65,7 @@ class DataHandlerLong64Test extends \PHPUnit_Framework_TestCase
         // Tests won't run if PHP_INT_SIZE < 8, but not certain the providers
         // won't be initialised...
         if (PHP_INT_SIZE >= 8) {
-            array_walk($values, function(&$value) {
+            array_walk($values, function (&$value) {
                 $value = [intval($value[0])];
             });
         }

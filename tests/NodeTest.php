@@ -115,7 +115,7 @@ class NodeTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             $expected,
             $node->findChildByName($find)
-            );
+        );
     }
 
     public function providerFindChildByName()
@@ -152,5 +152,4 @@ class NodeTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
-
 }
