@@ -83,7 +83,7 @@ class DataHandlerLong32Test extends \PHPUnit_Framework_TestCase
         // won't be initialised...
 
         if (extension_loaded('gmp')) {
-            array_walk($values, function(&$value) {
+            array_walk($values, function (&$value) {
                 $value = [gmp_strval(gmp_init($value[0]))];
             });
         }
@@ -111,7 +111,6 @@ class DataHandlerLong32Test extends \PHPUnit_Framework_TestCase
         $this->vRoot = vfsStream::setup();
         $this->vFile = new vfsStreamFile('sample.nbt');
         $this->vRoot->addChild($this->vFile);
-
     }
 
     private function setContentAndOpen($binary)

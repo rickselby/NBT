@@ -111,7 +111,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
     {
         return [
             // using -2147483648 becomes a float on 32 bit machines...
-            'smallest' => [pow(-2,31)],
+            'smallest' => [pow(-2, 31)],
             'negative' => [-23456789],
             'zero' => [0],
             'positive' => [1234567],
@@ -146,7 +146,7 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
         ];
 
         // Force a single-precision float value by packing and unpacking
-        array_walk($values, function(&$value) {
+        array_walk($values, function (&$value) {
             $value = [unpack('f', pack('f', $value[0]))[1]];
         });
 
@@ -231,14 +231,11 @@ class DataHandlerPutTest extends \PHPUnit_Framework_TestCase
     public function providerTestPutTAGIntArray()
     {
         return [
-            'small values' => [[pow(-2,31), -2147483647, -2147483646]],
+            'small values' => [[pow(-2, 31), -2147483647, -2147483646]],
             'large values' => [[2147483645, 2147483646, 2147483647]],
             'zeros' => [[0,0,0]],
             'single' => [[158976]],
             'longarray' => [array_fill(0, 255, -686842)],
         ];
     }
-
 }
-
-
