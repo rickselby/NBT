@@ -101,7 +101,7 @@ class RealTest extends TestCase
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_FLOAT)
                     ->setName('floatTest')
-                    ->setValue(0.49823147058487),
+                    ->setValue(0.4982314705848694),
                 (new \Nbt\Node())
                     ->setType(\Nbt\Tag::TAG_INT)
                     ->setName('intTest')
