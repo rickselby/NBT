@@ -4,33 +4,34 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf7a3c7718aa2054099b5069a038dc9e",
+    "content-hash": "d5cff029418b42a75d4c3731c69a89a8",
     "packages": [
         {
             "name": "nicmart/tree",
-            "version": "0.6.0",
+            "version": "0.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nicmart/Tree.git",
-                "reference": "bfd5123b0d0e33aa3b3292b794af6ea55b76a09e"
+                "reference": "c265a7776a35eecb66e5b832b7d15260e0f4fdd0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nicmart/Tree/zipball/bfd5123b0d0e33aa3b3292b794af6ea55b76a09e",
-                "reference": "bfd5123b0d0e33aa3b3292b794af6ea55b76a09e",
+                "url": "https://api.github.com/repos/nicmart/Tree/zipball/c265a7776a35eecb66e5b832b7d15260e0f4fdd0",
+                "reference": "c265a7776a35eecb66e5b832b7d15260e0f4fdd0",
                 "shasum": ""
             },
             "require": {
                 "php": "~8.0.0 || ~8.1.0 || ~8.2.0"
             },
             "require-dev": {
-                "ergebnis/composer-normalize": "^2.29.0",
+                "ergebnis/composer-normalize": "^2.31.0",
                 "ergebnis/license": "^2.1.0",
-                "ergebnis/php-cs-fixer-config": "^5.2.0",
-                "fakerphp/faker": "^1.21.0",
-                "phpunit/phpunit": "^9.5.28",
+                "ergebnis/php-cs-fixer-config": "^5.7.0",
+                "fakerphp/faker": "^1.23.0",
+                "infection/infection": "~0.26.19",
+                "phpunit/phpunit": "^9.6.9",
                 "psalm/plugin-phpunit": "~0.18.4",
-                "vimeo/psalm": "^5.6.0"
+                "vimeo/psalm": "^5.12.0"
             },
             "type": "library",
             "autoload": {
@@ -55,9 +56,9 @@
             "description": "A basic but flexible php tree data structure and a fluent tree builder implementation.",
             "support": {
                 "issues": "https://github.com/nicmart/Tree/issues",
-                "source": "https://github.com/nicmart/Tree/tree/0.6.0"
+                "source": "https://github.com/nicmart/Tree/tree/0.7.2"
             },
-            "time": "2023-01-27T16:33:26+00:00"
+            "time": "2023-06-18T12:36:55+00:00"
         }
     ],
     "packages-dev": [
