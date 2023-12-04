@@ -122,7 +122,7 @@ class Node extends \Tree\Node\Node
      */
     public function setKey($key, $value)
     {
-        $this->changeNodeValue(function($currentValue) use ($key, $value) {
+        $this->changeNodeValue(function ($currentValue) use ($key, $value) {
             $currentValue[$key] = $value;
             return $currentValue;
         });
@@ -187,7 +187,7 @@ class Node extends \Tree\Node\Node
 
     private function removeKey($key)
     {
-        $this->changeNodeValue(function($currentValue) use ($key) {
+        $this->changeNodeValue(function ($currentValue) use ($key) {
             unset($currentValue[$key]);
             return $currentValue;
         });
