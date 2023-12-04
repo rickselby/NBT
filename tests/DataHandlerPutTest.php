@@ -42,7 +42,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGByte()
+    public static function providerTestPutTAGByte()
     {
         return [
             'smallest' => [-128],
@@ -66,7 +66,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGString()
+    public static function providerTestPutTAGString()
     {
         return [['z'], ['words!'], ['averylongexampleimnotsurehowlongtheycanbe']];
     }
@@ -84,7 +84,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGShort()
+    public static function providerTestPutTAGShort()
     {
         return [
             'smallest' => [-32767],
@@ -108,7 +108,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGInt()
+    public static function providerTestPutTAGInt()
     {
         return [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -135,7 +135,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGFloat()
+    public static function providerTestPutTAGFloat()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -170,7 +170,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGDouble()
+    public static function providerTestPutTAGDouble()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -201,7 +201,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGByteArray()
+    public static function providerTestPutTAGByteArray()
     {
         return [
             'small values' => [[-128, -127, -126]],
@@ -229,7 +229,7 @@ class DataHandlerPutTest extends TestCase
         );
     }
 
-    public function providerTestPutTAGIntArray()
+    public static function providerTestPutTAGIntArray()
     {
         return [
             'small values' => [[pow(-2, 31), -2147483647, -2147483646]],

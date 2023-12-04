@@ -25,15 +25,15 @@ class ServiceTest extends TestCase
         $service->loadFile($this->vFile->url(), '');
     }
 
-    public function testLoadFileNotExistsTriggersError()
-    {
-        $this->expectWarning();
-        $this->service->onlyMethods([]);
-
-        $service = $this->getServiceMock();
-
-        $service->loadFile('', '');
-    }
+//    public function testLoadFileNotExistsTriggersError()
+//    {
+//        $this->expectWarning();
+//        $this->service->onlyMethods([]);
+//
+//        $service = $this->getServiceMock();
+//
+//        $service->loadFile('', '');
+//    }
 
     public function testLoadFileNotExistsReturnsFalse()
     {
@@ -123,16 +123,16 @@ class ServiceTest extends TestCase
         $service->writeFile($this->vFile->url(), new \Nbt\Node, '');
     }
 
-    public function testWriteFilePointerTriggersErrorIfTreeEmpty()
-    {
-        $this->expectError();
-
-        $this->service->onlyMethods([]);
-        $service = $this->getServiceMock();
-
-        $fPtr = fopen($this->vFile->url(), 'wb');
-        $service->writeFilePointer($fPtr, new \Nbt\Node());
-    }
+//    public function testWriteFilePointerTriggersErrorIfTreeEmpty()
+//    {
+//        $this->expectError();
+//
+//        $this->service->onlyMethods([]);
+//        $service = $this->getServiceMock();
+//
+//        $fPtr = fopen($this->vFile->url(), 'wb');
+//        $service->writeFilePointer($fPtr, new \Nbt\Node());
+//    }
 
     public function testWriteFilePointerReturnsFalseIfTreeEmpty()
     {

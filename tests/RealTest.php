@@ -44,25 +44,25 @@ class RealTest extends TestCase
         $this->vRoot->addChild($this->vFile);
     }
 
-    public function providerFiles()
+    public static function providerFiles()
     {
         return [
-            ['tests/Data/smalltest.nbt', $this->smallTree()],
-            ['tests/Data/bigtest.nbt', $this->bigTree()],
-            ['tests/Data/hugetest.nbt', $this->hugeTree()],
+            ['tests/Data/smalltest.nbt', self::smallTree()],
+            ['tests/Data/bigtest.nbt', self::bigTree()],
+            ['tests/Data/hugetest.nbt', self::hugeTree()],
         ];
     }
 
-    public function providerRawFiles()
+    public static function providerRawFiles()
     {
         return [
-            ['tests/Data/smalltest.raw.nbt', $this->smallTree()],
-            ['tests/Data/bigtest.raw.nbt', $this->bigTree()],
-            ['tests/Data/hugetest.raw.nbt', $this->hugeTree()],
+            ['tests/Data/smalltest.raw.nbt', self::smallTree()],
+            ['tests/Data/bigtest.raw.nbt', self::bigTree()],
+            ['tests/Data/hugetest.raw.nbt', self::hugeTree()],
         ];
     }
 
-    public function smallTree()
+    public static function smallTree()
     {
         return (new \Nbt\Node())
             ->setType(\Nbt\Tag::TAG_COMPOUND)
@@ -75,7 +75,7 @@ class RealTest extends TestCase
             ]);
     }
 
-    public function bigTree()
+    public static function bigTree()
     {
         $byteArray = [];
         for ($n = 0; $n < 1000; $n++) {
@@ -202,7 +202,7 @@ class RealTest extends TestCase
     }
 
 
-    public function hugeTree()
+    public static function hugeTree()
     {
         return (new \Nbt\Node())
             ->setType(\Nbt\Tag::TAG_COMPOUND)

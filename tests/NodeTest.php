@@ -16,7 +16,7 @@ class NodeTest extends TestCase
         $this->assertEquals($value, $node->getKey($key));
     }
 
-    public function providerSetKey()
+    public static function providerSetKey()
     {
         return [
             ['this', 'string value'],
@@ -70,7 +70,7 @@ class NodeTest extends TestCase
         $this->assertEquals($value, $node->getPayloadType());
     }
 
-    public function providerSetterTests()
+    public static function providerSetterTests()
     {
         return [
             ['string value'],
@@ -101,7 +101,7 @@ class NodeTest extends TestCase
         $this->assertEquals(null, $node->getType());
     }
 
-    public function providerMakeListPayload()
+    public static function providerMakeListPayload()
     {
         return [
             [(new \Nbt\Node)->setValue('value')->setName('name')->setType(0xff)]
@@ -120,7 +120,7 @@ class NodeTest extends TestCase
         );
     }
 
-    public function providerFindChildByName()
+    public static function providerFindChildByName()
     {
         $child = (new \Nbt\Node)->setName('findThisChild');
         return [

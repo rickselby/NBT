@@ -34,7 +34,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $byte);
     }
 
-    public function providerTestGetTAGByte()
+    public static function providerTestGetTAGByte()
     {
         return [
             'smallest' => [-128],
@@ -56,7 +56,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGString()
+    public static function providerTestGetTAGString()
     {
         return [['z'], ['words!'], ['averylongexampleimnotsurehowlongtheycanbe'], ['']];
     }
@@ -72,7 +72,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGShort()
+    public static function providerTestGetTAGShort()
     {
         return [
             'smallest' => [-32767],
@@ -94,7 +94,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGInt()
+    public static function providerTestGetTAGInt()
     {
         return [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -121,7 +121,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGFloat()
+    public static function providerTestGetTAGFloat()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -156,7 +156,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $string);
     }
 
-    public function providerTestGetTAGDouble()
+    public static function providerTestGetTAGDouble()
     {
         $values = [
             // using -2147483648 becomes a float on 32 bit machines...
@@ -187,7 +187,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $byte);
     }
 
-    public function providerTestGetTAGByteArray()
+    public static function providerTestGetTAGByteArray()
     {
         return [
             'small values' => [[-128, -127, -126]],
@@ -215,7 +215,7 @@ class DataHandlerGetTest extends TestCase
         $this->assertSame($value, $int);
     }
 
-    public function providerTestGetTAGIntArray()
+    public static function providerTestGetTAGIntArray()
     {
         return [
             'small values' => [[pow(-2, 31), -2147483647, -2147483646]],
