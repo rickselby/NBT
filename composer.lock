@@ -4,32 +4,32 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63aa9df81ceaf4c71de01189d0cd5a87",
+    "content-hash": "3c2cb8b3c3ee20bcc9125d0d8f7da9ca",
     "packages": [
         {
             "name": "nicmart/tree",
-            "version": "0.4.0",
+            "version": "0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nicmart/Tree.git",
-                "reference": "e992740d9ee7975c3fc324ddaafaf63b21e17704"
+                "reference": "8d52ed39be941754bbe7ac401d22dc2b63835e70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nicmart/Tree/zipball/e992740d9ee7975c3fc324ddaafaf63b21e17704",
-                "reference": "e992740d9ee7975c3fc324ddaafaf63b21e17704",
+                "url": "https://api.github.com/repos/nicmart/Tree/zipball/8d52ed39be941754bbe7ac401d22dc2b63835e70",
+                "reference": "8d52ed39be941754bbe7ac401d22dc2b63835e70",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0"
+                "php": "~8.0.0 || ~8.1.0 || ~8.2.0"
             },
             "require-dev": {
                 "ergebnis/composer-normalize": "^2.19.0",
                 "ergebnis/license": "^1.1.0",
                 "ergebnis/php-cs-fixer-config": "^2.14.0",
-                "phpunit/phpunit": "^8.5.30",
-                "psalm/plugin-phpunit": "~0.17.0",
-                "vimeo/psalm": "^4.27.0"
+                "phpunit/phpunit": "^8.5.32",
+                "psalm/plugin-phpunit": "~0.18.4",
+                "vimeo/psalm": "^4.29.0"
             },
             "type": "library",
             "autoload": {
@@ -50,9 +50,9 @@
             "description": "A basic but flexible php tree data structure and a fluent tree builder implementation.",
             "support": {
                 "issues": "https://github.com/nicmart/Tree/issues",
-                "source": "https://github.com/nicmart/Tree/tree/0.4.0"
+                "source": "https://github.com/nicmart/Tree/tree/0.5.0"
             },
-            "time": "2022-10-04T14:33:50+00:00"
+            "time": "2023-01-26T11:25:50+00:00"
         }
     ],
     "packages-dev": [
