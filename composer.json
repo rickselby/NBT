@@ -32,7 +32,7 @@
     ],
     "require": {
         "php": ">=8.1.0",
-        "nicmart/tree": "^0.7.0"
+        "nicmart/tree": "^0.8.0"
     },
     "require-dev": {
         "mikey179/vfsstream": "^1.6.0",
