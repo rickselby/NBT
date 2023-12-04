@@ -41,7 +41,7 @@ class TagTest extends TestCase
         $this->assertEquals($tag->getValue(), $value);
     }
 
-    public function providerTestTagGetters()
+    public static function providerTestTagGetters()
     {
         return [
             ['tagByte', 0x7b, Tag::TAG_BYTE],
@@ -74,7 +74,7 @@ class TagTest extends TestCase
         $this->assertEquals($tag->getType(), Tag::TAG_LIST);
     }
 
-    public function providerTestTagList()
+    public static function providerTestTagList()
     {
         return [
             [
@@ -106,7 +106,7 @@ class TagTest extends TestCase
         $this->assertEquals($tag->getType(), Tag::TAG_COMPOUND);
     }
 
-    public function providerTestTagCompound()
+    public static function providerTestTagCompound()
     {
         return  [
             [

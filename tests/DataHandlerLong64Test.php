@@ -50,7 +50,7 @@ class DataHandlerLong64Test extends TestCase
         );
     }
 
-    public function providerTestTAGLong()
+    public static function providerTestTAGLong()
     {
         // Values are stated as strings, then convert to ints if it's a 64 bit
         // machine, or passed through gmp_strval() (probably not necessary, actually)
