@@ -55,7 +55,7 @@ class Node extends \Tree\Node\Node
      *
      * @param mixed $value
      */
-    public function setValue($value)
+    public function setValue($value): static
     {
         $this->setKey('value', $value);
 
@@ -99,7 +99,7 @@ class Node extends \Tree\Node\Node
      *
      * @return mixed
      */
-    public function getValue()
+    public function getValue(): mixed
     {
         return $this->getKey('value');
     }
